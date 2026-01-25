@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import { Loader } from "@/components/loader";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { addMovie } from "@/utils/db/connectDB";
+import { addMovie, updateMovie } from "@/utils/db/connectDB";
 import { useLocalStorage, useMovieStore } from "@/store/store";
 
 export function SeparateMoviePage({
@@ -24,17 +24,18 @@ export function SeparateMoviePage({
 
   const userID = useLocalStorage((state) => state.userID);
   const savedMovies = useMovieStore((state) => state.savedMovies);
-
   const router = useRouter();
 
   useEffect(() => {
     setLoading(true);
     if (!selectedMovieId) return;
-    if (savedMovies.find((movie) => movie.imdbID === selectedMovieId)) {
-      setMovie(savedMovies.find((movie) => movie.imdbID === selectedMovieId));
+    let movie = savedMovies.find((movie) => movie.imdbID === selectedMovieId);
+    if (movie) {
+      setMovie(movie);
       setLoading(false);
       return;
     }
+
     fetch(`https://www.omdbapi.com/?i=${selectedMovieId}&apikey=5cc173f0`, {
       cache: "force-cache",
     })
@@ -50,16 +51,40 @@ export function SeparateMoviePage({
       toast.error("Please login to add to watchlist");
       router.push("/login");
     }
+
+    let movie = savedMovies.find((movie) => movie.imdbID === selectedMovieId);
+
+    if (movie.watched === false) {
+      toast.error("Movie already added to watchlist");
+      return;
+    }
+
     try {
       setIsLoading(true);
-      const movieData = { ...movie, watched: false };
-      const { success, message } = await addMovie(movieData, userID);
-      if (success) {
-        toast.success(message);
-        setSelectedMovieId("");
-        setIsShowingMovies(!isShowingMovies);
+      if (movie) {
+        const movieData = { ...movie, watched: false };
+        const { success, message } = await updateMovie(
+          selectedMovieId,
+          movieData,
+          userID,
+        );
+        if (success) {
+          toast.success(message);
+          setSelectedMovieId("");
+          setIsShowingMovies(!isShowingMovies);
+        } else {
+          toast.error(message);
+        }
       } else {
-        toast.error(message);
+        const movieData = { ...movie, watched: false };
+        const { success, message } = await addMovie(movieData, userID);
+        if (success) {
+          toast.success(message);
+          setSelectedMovieId("");
+          setIsShowingMovies(!isShowingMovies);
+        } else {
+          toast.error(message);
+        }
       }
     } catch (error) {
       toast.error(error.message);
@@ -73,18 +98,48 @@ export function SeparateMoviePage({
       toast.error("Please login to add to watchlist");
       router.push("/login");
     }
+
+    let isSavedMovie = savedMovies.find(
+      (movie) => movie.imdbID === selectedMovieId,
+    );
+
+    if (isSavedMovie.watched === true) {
+      toast.error("Movie already added to watchedlist");
+      return;
+    }
+
     try {
       setIsLoading2(true);
-      const movieData = { ...movie, watched: true };
-      const { success, message } = await addMovie(movieData, userID);
-      if (success) {
-        toast.success(message);
-        setSelectedMovieId("");
-        setIsShowingMovies(!isShowingMovies);
-      } else {
-        toast.error(message);
+      // Check if movie is already saved
+      if (isSavedMovie) {
+        isSavedMovie.watched = true;
+        const { success, message } = await updateMovie(
+          selectedMovieId,
+          isSavedMovie,
+          userID,
+        );
+        if (success) {
+          toast.success(message);
+          setSelectedMovieId("");
+          setIsShowingMovies(!isShowingMovies);
+        } else {
+          toast.error(message);
+        }
+      }
+      // Movie is not saved
+      else {
+        const movieData = { ...movie, watched: true };
+        const { success, message } = await addMovie(movieData, userID);
+        if (success) {
+          toast.success(message);
+          setSelectedMovieId("");
+          setIsShowingMovies(!isShowingMovies);
+        } else {
+          toast.error(message);
+        }
       }
     } catch (error) {
+      console.error(error);
       toast.error(error.message);
     } finally {
       setIsLoading2(false);

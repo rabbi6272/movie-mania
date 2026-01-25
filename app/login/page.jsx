@@ -17,21 +17,24 @@ export default function LoginForm() {
 
   const userID = useLocalStorage((state) => state.userID);
   const setUserID = useLocalStorage((state) => state.setUserID);
+  console.log("userID: ", userID);
 
   async function handleSubmit(event) {
     event.preventDefault();
-    const email = formData.email;
-    const password = formData.password;
+
     if (userID) {
       toast.error("User is already logged in");
+      router.push("/");
       return;
     }
+    const email = formData.email;
+    const password = formData.password;
     const loginPromise = signInWithEmailAndPassword(auth, email, password).then(
       (userCredential) => {
         localStorage.setItem("userID", JSON.stringify(userCredential.user.uid));
         setUserID(userCredential.user.uid);
-        return userCredential;
-      }
+        router.push("/");
+      },
     );
 
     toast.promise(loginPromise, {
@@ -52,9 +55,6 @@ export default function LoginForm() {
         return formattedMessage;
       },
     });
-
-    setFormData({ email: "", password: "" });
-    router.push("/");
   }
 
   return (
@@ -99,7 +99,9 @@ export default function LoginForm() {
           </span>
           <span className=" text-blue-400">Forgot Password?</span>
         </p>
-        <Button type="submit">Log In </Button>
+        <Button type="submit" className={"rounded-full px-6 font-medium"}>
+          Log In{" "}
+        </Button>
       </form>
     </div>
   );

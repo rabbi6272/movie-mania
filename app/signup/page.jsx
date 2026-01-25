@@ -18,6 +18,7 @@ export default function SignupForm() {
 
   const userID = useLocalStorage((state) => state.userID);
   const setUserID = useLocalStorage((state) => state.setUserID);
+  console.log("userID: ", userID);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -25,17 +26,18 @@ export default function SignupForm() {
     const password = formData.password;
     if (userID) {
       toast.error("User is already logged in");
+      router.push("/");
       return;
     }
-    const signupPromise = createUserWithEmailAndPassword(
-      auth,
-      email,
-      password
-    ).then((userCredential) => {
-      localStorage.setItem("userID", JSON.stringify(userCredential.user.uid));
-      setUserID(userCredential.user.uid);
-      return userCredential;
-    });
+    const signupPromise = createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        localStorage.setItem("userID", JSON.stringify(userCredential.user.uid));
+        setUserID(userCredential.user.uid);
+        router.push("/");
+      })
+      .catch((error) => {
+        console.error(error);
+      });
 
     toast.promise(signupPromise, {
       loading: "Signing up...",
@@ -56,15 +58,15 @@ export default function SignupForm() {
       },
     });
 
-    setFormData({ email: "", password: "" });
-    router.push("/");
+    // setFormData({ email: "", password: "" });
+    // router.push("/");
   }
 
   return (
     <div className="flex items-center justify-center h-[calc(100vh-70px)] px-4 md:px-0">
       <form
         onSubmit={handleSubmit}
-        className="space-y-3 max-w-full md:w-[50%] lg:w-[40%] xl:w-[30%] p-5 bg-white shadow-md rounded-lg"
+        className="space-y-3 max-w-full sm:w-[70%] md:w-[50%] lg:w-[30%] xl:w-[25%] p-5 bg-white shadow-md rounded-lg"
       >
         <h1 className="text-2xl text-gray-700 font-bold text-center">
           Sign Up
@@ -105,7 +107,9 @@ export default function SignupForm() {
           </span>
           <span className=" text-blue-400">Forgot Password?</span>
         </p>
-        <Button type="submit">Sign Up</Button>
+        <Button type="submit" className={"rounded-full px-6 font-medium"}>
+          Sign Up
+        </Button>
       </form>
     </div>
   );

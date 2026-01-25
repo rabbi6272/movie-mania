@@ -4,12 +4,12 @@ import { getAuth } from "firebase/auth";
 import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyA8F7uZIng4N4qlxwK7Afl0G8kdvDCENt4",
-  authDomain: "movies-hub-89d08.firebaseapp.com",
-  projectId: "movies-hub-89d08",
-  storageBucket: "movies-hub-89d08.firebasestorage.app",
-  messagingSenderId: "1092352196560",
-  appId: "1:1092352196560:web:a0fdb263761922c6a943d5",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
   measurementId: "G-09JHYT4XB2",
 };
 
@@ -20,9 +20,9 @@ const app = initializeApp(firebaseConfig);
 if (typeof window !== "undefined") {
   initializeAppCheck(app, {
     provider: new ReCaptchaV3Provider(
-      "6Lcdxw8sAAAAAMpQTeySKzUNNsTRb3yxeRorE7vy"
+      "6Lcdxw8sAAAAAMpQTeySKzUNNsTRb3yxeRorE7vy",
     ),
-    isTokenAutoRefreshEnabled: true, // Automatically refresh tokens
+    isTokenAutoRefreshEnabled: true,
   });
 }
 

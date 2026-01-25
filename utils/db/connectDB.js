@@ -37,7 +37,7 @@ export async function addMovie(movieData, userID) {
     throw new Error("User ID is required");
   }
   try {
-    const docRef = await addDoc(collection(db, userID), movieData);
+    await addDoc(collection(db, userID), movieData);
     return {
       success: true,
       message: "Movie added successfully",
@@ -52,6 +52,7 @@ export async function updateMovie(movieId, updateData, userID) {
   if (!userID) {
     throw new Error("User ID is required");
   }
+  console.log("updateData: ", updateData);
   try {
     const movieRef = doc(db, userID, movieId);
     await updateDoc(movieRef, updateData);

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ttTrailers } from "@/app/ui/fonts";
 
 import { useSearchMovies } from "@/utils/hooks/useSearchMovies";
+import Link from "next/link";
 
 export default function Navbar() {
   const { query, setQuery } = useSearchMovies();
@@ -23,7 +24,7 @@ function SmallNavbar({ query, setQuery }) {
         <h1
           className={`${ttTrailers.className} italic font-extrabold text-gray-800 text-3xl `}
         >
-          MoviesHub
+          <Link href="/">MoviesHub</Link>
         </h1>
         <div className="flex items-center justify-center text-gray-800">
           <span
@@ -70,7 +71,7 @@ function LargeNavbar({ query, setQuery }) {
       <h1
         className={`${ttTrailers.className} italic font-extrabold text-gray-800 text-3xl `}
       >
-        MoviesHub
+        <Link href="/">MoviesHub</Link>
       </h1>
       <div className="flex justify-end relative w-full ">
         <input

@@ -104,7 +104,7 @@ export function SmallMovieCard({
 
   return (
     <motion.div
-      className="h-auto w-full mx-auto rounded-lg border-2 border-gray-200 flex flex-col p-2 cursor-pointer hover:bg-gray-200 transition-color duration-500"
+      className="h-auto w-full mx-auto rounded-lg border-1 border-gray-200 flex flex-col p-2 cursor-pointer hover:bg-gray-200 transition-color duration-500 shadow-md"
       key={movie.imdbID}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -114,12 +114,12 @@ export function SmallMovieCard({
         setIsShowingMovies(!isShowingMovies);
       }}
     >
-      {movie.Poster !== "N/A" ? (
+      {movie.Poster !== "N/A" || movie.Poster !== "" ? (
         <Image
-          width={130}
+          width={100}
           height={100}
           style={{ height: "auto" }}
-          src={movie.Poster}
+          src={movie.Poster || null}
           alt={movie.Title}
           className="rounded-md object-cover mx-auto"
         />
@@ -128,10 +128,12 @@ export function SmallMovieCard({
       )}
 
       <div className="p-2 w-full flex flex-col gap-0.5 items-center">
-        <h1 className="text-gray-600 text-base text-wrap font-medium font-nunito">
+        <h1 className="text-gray-600 text-sm lg:text-base text-wrap font-medium font-nunito">
           {movie.Title}
         </h1>
-        <p className="text-sm font-light text-gray-500">{movie.Year}</p>
+        <p className="text-[12px] lg:text-[14px] font-normal text-gray-500">
+          {movie.Year}
+        </p>
       </div>
     </motion.div>
   );

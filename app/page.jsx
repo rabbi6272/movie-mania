@@ -128,7 +128,7 @@ export default function HomePage() {
           </Select>
         </div>
 
-        <div className="w-full grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-2 px-4 my-2">
+        <div className="w-full grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 xl:grid-cols-8 2xl:grid-cols-10 gap-2 px-4 my-2">
           {filteredMovies?.map((movie, index) => (
             <SmallMovieCard
               key={index}

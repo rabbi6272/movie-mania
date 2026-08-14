@@ -6,7 +6,7 @@ const getAuthHeaders = () => ({
   "Content-Type": "application/json",
 });
 
-const fetchFromTMDB = async (endpoint, params = {}) => {
+const fetchFromTMDB = async (endpoint, params = {}, signal) => {
   const url = new URL(`${TMDB_BASE_URL}${endpoint}`);
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== "") {
@@ -14,7 +14,10 @@ const fetchFromTMDB = async (endpoint, params = {}) => {
     }
   });
 
-  const res = await fetch(url.toString(), { headers: getAuthHeaders() });
+  const res = await fetch(url.toString(), {
+    headers: getAuthHeaders(),
+    signal,
+  });
   if (!res.ok) {
     throw new Error(`TMDB API error: ${res.status} ${res.statusText}`);
   }
@@ -36,12 +39,15 @@ export const getProfileURL = (path, size = "w185") => {
   return `${TMDB_IMAGE_BASE}/${size}${path}`;
 };
 
-export const searchMovies = async (query, page = 1) => {
-  return fetchFromTMDB("/search/movie", {
-    query,
-    page,
-    // include_adult: false,
-  });
+export const searchMovies = async (query, page = 1, signal) => {
+  return fetchFromTMDB(
+    "/search/movie",
+    {
+      query,
+      page,
+    },
+    signal,
+  );
 };
 
 export const getMovieDetails = async (id) => {

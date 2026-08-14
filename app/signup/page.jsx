@@ -31,7 +31,6 @@ export default function SignupForm() {
     }
     const signupPromise = createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
-        localStorage.setItem("userID", JSON.stringify(userCredential.user.uid));
         setUserID(userCredential.user.uid);
         router.push("/");
       })

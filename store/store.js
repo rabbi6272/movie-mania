@@ -22,35 +22,8 @@ export const useMovieStore = create((set) => ({
   searchTotalPages: 1,
   setSearchTotalPages: (searchTotalPages) => set({ searchTotalPages }),
 
-  trendingMovies: [],
-  setTrendingMovies: (trendingMovies) => set({ trendingMovies }),
-
-  trendingLoading: false,
-  setTrendingLoading: (trendingLoading) => set({ trendingLoading }),
-
-  popularMovies: [],
-  setPopularMovies: (popularMovies) => set({ popularMovies }),
-
-  popularLoading: false,
-  setPopularLoading: (popularLoading) => set({ popularLoading }),
-
-  popularPage: 1,
-  setPopularPage: (popularPage) => set({ popularPage }),
-
-  popularTotalPages: 1,
-  setPopularTotalPages: (popularTotalPages) => set({ popularTotalPages }),
-
   genres: [],
   setGenres: (genres) => set({ genres }),
-
-  activeTab: "trending",
-  setActiveTab: (activeTab) => set({ activeTab }),
-
-  selectedMovieId: null,
-  setSelectedMovieId: (selectedMovieId) => set({ selectedMovieId }),
-
-  isShowingMovies: false,
-  setIsShowingMovies: (isShowingMovies) => set({ isShowingMovies }),
 
   filters: {
     genreIds: [],
@@ -59,7 +32,8 @@ export const useMovieStore = create((set) => ({
     minRating: null,
     maxRating: null,
   },
-  setFilters: (filters) => set((state) => ({ filters: { ...state.filters, ...filters } })),
+  setFilters: (filters) =>
+    set((state) => ({ filters: { ...state.filters, ...filters } })),
   resetFilters: () =>
     set({
       filters: {
@@ -70,15 +44,6 @@ export const useMovieStore = create((set) => ({
         maxRating: null,
       },
     }),
-
-  filteredMovies: [],
-  setFilteredMovies: (filteredMovies) => set({ filteredMovies }),
-  filteredLoading: false,
-  setFilteredLoading: (filteredLoading) => set({ filteredLoading }),
-  filteredPage: 1,
-  setFilteredPage: (filteredPage) => set({ filteredPage }),
-  filteredTotalPages: 1,
-  setFilteredTotalPages: (filteredTotalPages) => set({ filteredTotalPages }),
 }));
 
 export const useLocalStorage = create((set) => ({

@@ -1,8 +1,9 @@
-import { Nunito, Inter } from "next/font/google";
+import { Nunito } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/navbar";
 import { Toaster } from "react-hot-toast";
 import Link from "next/link";
+import Providers from "@/components/Providers";
 
 const nunito = Nunito({
   subsets: ["latin"],
@@ -65,28 +66,30 @@ export default function RootLayout({ children }) {
       <body
         className={`${nunito.className} antialiased min-h-screen bg-gray-50 text-gray-600`}
       >
-        <Toaster
-          position="top-center"
-          toastOptions={{
-            duration: 1500,
-          }}
-        />
-        <Navbar />
-        <main className="min-h-[calc(100vh-70px-32px)]">{children}</main>
+        <Providers>
+          <Toaster
+            position="top-center"
+            toastOptions={{
+              duration: 1500,
+            }}
+          />
+          <Navbar />
+          <main className="min-h-[calc(100vh-70px-32px)]">{children}</main>
 
-        <footer>
-          <p className="text-sm text-gray-500 text-center pb-3">
-            Developed with ❤️ by{" "}
-            <Link
-              href={"https://github.com/rabbi6272"}
-              target="_blank"
-              className="hover:underline"
-            >
-              {" "}
-              Rabbi
-            </Link>
-          </p>
-        </footer>
+          <footer>
+            <p className="text-sm text-gray-500 text-center pb-3">
+              Developed with ❤️ by{" "}
+              <Link
+                href={"https://github.com/rabbi6272"}
+                target="_blank"
+                className="hover:underline"
+              >
+                {" "}
+                Rabbi
+              </Link>
+            </p>
+          </footer>
+        </Providers>
       </body>
     </html>
   );

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -15,65 +15,49 @@ import { Loader } from "@/components/loader";
 import { SeparateMoviePage } from "../components/SeparateMoviePage";
 
 import { useLocalStorage, useMovieStore } from "@/store/store";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAllMovies } from "@/utils/db/connectDB";
 import { useSearchMovies } from "@/hooks/useSearchMovies";
 
 export default function HomePage() {
   const [category, setCategory] = useState("all");
-  const [isLoading, setLoading] = useState(false);
-
   const [isShowingMovies, setIsShowingMovies] = useState(false);
   const [selectedMovieId, setSelectedMovieId] = useState("");
 
   const userID = useLocalStorage((state) => state.userID);
   const setUserID = useLocalStorage((state) => state.setUserID);
 
-  const savedMovies = useMovieStore((state) => state.savedMovies);
-  const setSavedMovies = useMovieStore((state) => state.setSavedMovies);
+  const queryClient = useQueryClient();
+
+  const { data: savedMovies = [], isLoading: moviesLoading } = useQuery({
+    queryKey: ["movies", userID],
+    queryFn: () => getAllMovies(userID),
+    enabled: !!userID,
+    staleTime: 2 * 60 * 1000,
+  });
+
+  useEffect(() => {
+    setUserID(localStorage.getItem("userID"));
+  }, [setUserID]);
 
   const { searchedMovies, searchLoading, searchError } = useSearchMovies();
 
-  const fetchMovies = async () => {
-    try {
-      setLoading(true);
-      const data = await getAllMovies(userID);
-      setSavedMovies(data);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const filteredMovies = useMemo(() => {
+    if (searchedMovies?.length > 0) return searchedMovies;
+    if (category === "wantToWatch")
+      return savedMovies?.filter((movie) => movie.watched === false);
+    if (category === "watched")
+      return savedMovies?.filter((movie) => movie.watched === true);
+    return savedMovies;
+  }, [searchedMovies, category, savedMovies]);
 
-  useEffect(() => {
-    console.log("userID: ", userID, localStorage.getItem("userID"));
-    setUserID(localStorage.getItem("userID"));
-    if (!userID) {
-      return;
-    }
-    fetchMovies();
-  }, [userID]);
-
-  // Refetch when returning from movie details page
   useEffect(() => {
     if (!isShowingMovies && userID) {
-      fetchMovies();
+      queryClient.invalidateQueries({ queryKey: ["movies", userID] });
     }
-  }, [isShowingMovies]);
+  }, [isShowingMovies, userID, queryClient]);
 
-  let filteredMovies;
-
-  if (searchedMovies?.length > 0) {
-    filteredMovies = searchedMovies;
-  } else if (category === "wantToWatch") {
-    filteredMovies = savedMovies?.filter((movie) => movie.watched === false);
-  } else if (category === "watched") {
-    filteredMovies = savedMovies?.filter((movie) => movie.watched === true);
-  } else if (category === "all") {
-    filteredMovies = savedMovies;
-  }
-
-  if (searchLoading || isLoading) {
+  if (searchLoading || moviesLoading) {
     return (
       <div className="w-full h-[calc(100vh-70px)] flex items-center justify-center">
         <Loader />
@@ -131,11 +115,10 @@ export default function HomePage() {
         <div className="w-full grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 xl:grid-cols-8 2xl:grid-cols-10 gap-2 px-4 my-2">
           {filteredMovies?.map((movie, index) => (
             <SmallMovieCard
-              key={index}
+              key={movie.tmdbId || movie.id || index}
               movie={movie}
               index={index}
               setSelectedMovieId={setSelectedMovieId}
-              isShowingMovies={isShowingMovies}
               setIsShowingMovies={setIsShowingMovies}
             />
           ))}

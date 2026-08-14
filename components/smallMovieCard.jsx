@@ -1,9 +1,9 @@
 "use client";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { memo } from "react";
 import { getPosterURL } from "@/api/tmdb";
 
-export function SmallMovieCard({
+export const SmallMovieCard = memo(function SmallMovieCard({
   movie,
   index,
   setSelectedMovieId,
@@ -13,11 +13,9 @@ export function SmallMovieCard({
   const year = movie.release_date?.substring(0, 4) || "N/A";
 
   return (
-    <motion.div
-      className="h-auto w-full mx-auto rounded-lg border border-gray-200 flex flex-col cursor-pointer hover:bg-gray-100 transition-colors duration-300 shadow-md overflow-hidden group"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.03 }}
+    <div
+      className="h-auto w-full mx-auto rounded-lg border border-gray-200 flex flex-col cursor-pointer hover:bg-gray-100 transition-colors duration-300 shadow-md overflow-hidden group animate-fadeIn"
+      style={{ animationDelay: `${index * 30}ms` }}
       onClick={() => {
         setSelectedMovieId(movie.tmdbId || movie.id);
         setIsShowingMovies(true);
@@ -50,6 +48,6 @@ export function SmallMovieCard({
         </h3>
         <p className="text-[11px] sm:text-xs text-gray-400 mt-0.5">{year}</p>
       </div>
-    </motion.div>
+    </div>
   );
-}
+});

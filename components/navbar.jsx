@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import { ttTrailers } from "@/app/ui/fonts";
 
-import { useSearchMovies } from "@/utils/hooks/useSearchMovies";
+import { useSearchMovies } from "@/hooks/useSearchMovies";
 import Link from "next/link";
 
 export default function Navbar() {

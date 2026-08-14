@@ -16,7 +16,7 @@ import { SeparateMoviePage } from "../components/SeparateMoviePage";
 
 import { useLocalStorage, useMovieStore } from "@/store/store";
 import { getAllMovies } from "@/utils/db/connectDB";
-import { useSearchMovies } from "@/utils/hooks/useSearchMovies";
+import { useSearchMovies } from "@/hooks/useSearchMovies";
 
 export default function HomePage() {
   const [category, setCategory] = useState("all");
@@ -37,7 +37,6 @@ export default function HomePage() {
     try {
       setLoading(true);
       const data = await getAllMovies(userID);
-      console.log(data);
       setSavedMovies(data);
     } catch (error) {
       console.log(error);
@@ -47,7 +46,8 @@ export default function HomePage() {
   };
 
   useEffect(() => {
-    setUserID(JSON.parse(localStorage.getItem("userID")));
+    console.log("userID: ", userID, localStorage.getItem("userID"));
+    setUserID(localStorage.getItem("userID"));
     if (!userID) {
       return;
     }

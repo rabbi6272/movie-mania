@@ -1,6 +1,5 @@
 "use client";
 import Image from "next/image";
-import Head from "next/head";
 import { useRouter } from "next/navigation";
 
 import { motion } from "framer-motion";
@@ -10,6 +9,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { addMovie, updateMovie } from "@/utils/db/connectDB";
 import { useLocalStorage, useMovieStore } from "@/store/store";
+import { getMovieDetails, getPosterURL } from "@/api/tmdb";
 
 export function SeparateMoviePage({
   selectedMovieId,
@@ -29,19 +29,22 @@ export function SeparateMoviePage({
   useEffect(() => {
     setLoading(true);
     if (!selectedMovieId) return;
-    let movie = savedMovies.find((movie) => movie.imdbID === selectedMovieId);
-    if (movie) {
-      setMovie(movie);
+
+    let savedMovie = savedMovies.find(
+      (m) => m.tmdbId === Number(selectedMovieId),
+    );
+    if (savedMovie) {
+      setMovie(savedMovie);
       setLoading(false);
       return;
     }
 
-    fetch(`https://www.omdbapi.com/?i=${selectedMovieId}&apikey=5cc173f0`, {
-      cache: "force-cache",
-    })
-      .then((res) => res.json())
+    getMovieDetails(selectedMovieId)
       .then((data) => {
         setMovie(data);
+        setLoading(false);
+      })
+      .catch(() => {
         setLoading(false);
       });
   }, [selectedMovieId]);
@@ -50,19 +53,22 @@ export function SeparateMoviePage({
     if (!userID) {
       toast.error("Please login to add to watchlist");
       router.push("/login");
+      return;
     }
 
-    let movie = savedMovies.find((movie) => movie.imdbID === selectedMovieId);
+    let existingMovie = savedMovies.find(
+      (m) => m.tmdbId === Number(selectedMovieId),
+    );
 
-    if (movie.watched === false) {
+    if (existingMovie && existingMovie.watched === false) {
       toast.error("Movie already added to watchlist");
       return;
     }
 
     try {
       setIsLoading(true);
-      if (movie) {
-        const movieData = { ...movie, watched: false };
+      if (existingMovie) {
+        const movieData = { ...existingMovie, watched: false };
         const { success, message } = await updateMovie(
           selectedMovieId,
           movieData,
@@ -76,7 +82,16 @@ export function SeparateMoviePage({
           toast.error(message);
         }
       } else {
-        const movieData = { ...movie, watched: false };
+        const movieData = {
+          tmdbId: movie.id,
+          title: movie.title,
+          poster_path: movie.poster_path,
+          backdrop_path: movie.backdrop_path,
+          overview: movie.overview,
+          vote_average: movie.vote_average,
+          release_date: movie.release_date,
+          watched: false,
+        };
         const { success, message } = await addMovie(movieData, userID);
         if (success) {
           toast.success(message);
@@ -95,27 +110,27 @@ export function SeparateMoviePage({
 
   async function handleAddToWatched() {
     if (!userID) {
-      toast.error("Please login to add to watchlist");
+      toast.error("Please login to add to watched list");
       router.push("/login");
+      return;
     }
 
-    let isSavedMovie = savedMovies.find(
-      (movie) => movie.imdbID === selectedMovieId,
+    let existingMovie = savedMovies.find(
+      (m) => m.tmdbId === Number(selectedMovieId),
     );
 
-    if (isSavedMovie.watched === true) {
-      toast.error("Movie already added to watchedlist");
+    if (existingMovie && existingMovie.watched === true) {
+      toast.error("Movie already added to watched list");
       return;
     }
 
     try {
       setIsLoading2(true);
-      // Check if movie is already saved
-      if (isSavedMovie) {
-        isSavedMovie.watched = true;
+      if (existingMovie) {
+        const movieData = { ...existingMovie, watched: true };
         const { success, message } = await updateMovie(
           selectedMovieId,
-          isSavedMovie,
+          movieData,
           userID,
         );
         if (success) {
@@ -125,10 +140,17 @@ export function SeparateMoviePage({
         } else {
           toast.error(message);
         }
-      }
-      // Movie is not saved
-      else {
-        const movieData = { ...movie, watched: true };
+      } else {
+        const movieData = {
+          tmdbId: movie.id,
+          title: movie.title,
+          poster_path: movie.poster_path,
+          backdrop_path: movie.backdrop_path,
+          overview: movie.overview,
+          vote_average: movie.vote_average,
+          release_date: movie.release_date,
+          watched: true,
+        };
         const { success, message } = await addMovie(movieData, userID);
         if (success) {
           toast.success(message);
@@ -146,199 +168,116 @@ export function SeparateMoviePage({
     }
   }
 
-  return (
-    <>
-      <Head>
-        <title>
-          {movie.Title
-            ? `${movie.Title} (${movie.Year}) | MoviesHub`
-            : "Movie Details | MoviesHub"}
-        </title>
-        <meta
-          name="description"
-          content={
-            movie.Plot
-              ? movie.Plot
-              : "Movie details, ratings, and more on MoviesHub."
-          }
-        />
-        <meta
-          property="og:title"
-          content={
-            movie.Title
-              ? `${movie.Title} (${movie.Year}) | MoviesHub`
-              : "Movie Details | MoviesHub"
-          }
-        />
-        <meta
-          property="og:description"
-          content={
-            movie.Plot
-              ? movie.Plot
-              : "Movie details, ratings, and more on MoviesHub."
-          }
-        />
-        <meta property="og:type" content="article" />
-        {movie.Poster && movie.Poster !== "N/A" && (
-          <meta property="og:image" content={movie.Poster} />
-        )}
-        <meta name="twitter:card" content="summary_large_image" />
-        {/* Structured Data for Movie */}
-        {movie.Title && (
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
-                "@context": "https://schema.org",
-                "@type": "Movie",
-                name: movie.Title,
-                image:
-                  movie.Poster && movie.Poster !== "N/A"
-                    ? movie.Poster
-                    : undefined,
-                description: movie.Plot,
-                director: movie.Director,
-                datePublished: movie.Released,
-                genre: movie.Genre,
-                aggregateRating:
-                  movie.imdbRating && movie.imdbVotes
-                    ? {
-                        "@type": "AggregateRating",
-                        ratingValue: movie.imdbRating,
-                        ratingCount: movie.imdbVotes.replace(/,/g, ""),
-                      }
-                    : undefined,
-              }),
-            }}
-          />
-        )}
-        <meta
-          name="twitter:title"
-          content={
-            movie.Title
-              ? `${movie.Title} (${movie.Year}) | MoviesHub`
-              : "Movie Details | MoviesHub"
-          }
-        />
-        <meta
-          name="twitter:description"
-          content={
-            movie.Plot
-              ? movie.Plot
-              : "Movie details, ratings, and more on MoviesHub."
-          }
-        />
-        {movie.Poster && movie.Poster !== "N/A" && (
-          <meta name="twitter:image" content={movie.Poster} />
-        )}
-      </Head>
+  const posterURL = getPosterURL(movie.poster_path, "w500");
+  const year = movie.release_date?.substring(0, 4) || "N/A";
+  const genres = movie.genres?.map((g) => g.name).join(", ") || "N/A";
+  const director =
+    movie.credits?.crew?.find((c) => c.job === "Director")?.name || "N/A";
 
-      <div className="relative my-4 p-2 md:p-3 w-[95%] md:w-[60%] lg:w-[50%]  mx-auto rounded-lg bg-white text-gray-500 flex flex-col items-center justify-between shadow-md">
-        {loading && (
-          <div className="h-full w-full grid place-items-center">
-            <Loader />
-          </div>
-        )}
-        <button
-          className="absolute top-[5px] left-[5px] md:top-[10px] md:left-[10px] h-[40px] w-[40px] rounded-full bg-gray-100 active:scale-95 transition duration-300 grid place-items-center cursor-pointer"
-          onClick={() => {
-            setSelectedMovieId("");
-            setIsShowingMovies(!isShowingMovies);
-          }}
+  return (
+    <div className="relative my-4 p-2 md:p-3 w-[95%] md:w-[60%] lg:w-[50%] mx-auto rounded-lg bg-white text-gray-500 flex flex-col items-center justify-between shadow-md">
+      {loading && (
+        <div className="h-full w-full grid place-items-center">
+          <Loader />
+        </div>
+      )}
+      <button
+        className="absolute top-[5px] left-[5px] md:top-[10px] md:left-[10px] h-[40px] w-[40px] rounded-full bg-gray-100 active:scale-95 transition duration-300 grid place-items-center cursor-pointer z-10"
+        onClick={() => {
+          setSelectedMovieId("");
+          setIsShowingMovies(!isShowingMovies);
+        }}
+      >
+        <span className="material-symbols-outlined text-gray-700">
+          arrow_back
+        </span>
+      </button>
+      {!loading && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1 }}
+          className="flex flex-col items-center justify-between"
         >
-          <span className="material-symbols-outlined text-gray-700">
-            arrow_back
-          </span>
-        </button>
-        {!loading && (
+          {posterURL && (
+            <Image
+              height={200}
+              width={250}
+              src={posterURL}
+              alt={movie.title}
+              className="rounded-md object-cover aspect-auto"
+            />
+          )}
+
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 1 }}
-            className="flex flex-col items-center justify-between"
+            transition={{ duration: 1, delay: 0.2 }}
+            className="flex-1 text-gray-500 py-2 lg:py-4 mx-auto flex flex-col gap-2 items-center justify-center text-base"
           >
-            {movie.Poster !== "N/A" && (
-              <Image
-                height={200}
-                width={250}
-                src={movie.Poster}
-                alt={movie.Title}
-                className="rounded-md object-cover aspect-auto"
-              />
-            )}
-
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1, delay: 0.2 }}
-              className="flex-1 text-gray-500 py-2 lg:py-4 mx-auto flex flex-col gap-2 items-center justify-center text-base"
-            >
-              <h1 className="text-2xl lg:text-3xl text-gray-600 font-nunito font-bold">
-                {movie.Title}
-              </h1>
-              <div className="w-full flex gap-6">
-                <div className="flex-1 text-right">
-                  <span>⭐{movie.imdbRating}</span>
-                  <br />
-                  <span>Year: {movie.Year}</span>
-                  <br />
-                  <span>Runtime: {movie.Runtime}</span>
-                  <br />
-                  <span>Director: {movie.Director}</span>
-                  <br />
-                </div>
-                <div className="flex-1 text-left">
-                  <span>📈{movie.imdbVotes}</span>
-                  <br />
-                  <span>Released: {movie.Released}</span>
-                  <br />
-                  <span>Genre: {movie.Genre}</span>
-                  <br />
-                  <span>Language: {movie.Language}</span>
-                  <br />
-                </div>
+            <h1 className="text-2xl lg:text-3xl text-gray-600 font-nunito font-bold">
+              {movie.title}
+            </h1>
+            <div className="w-full flex gap-6">
+              <div className="flex-1 text-right">
+                <span>
+                  ⭐{movie.vote_average?.toFixed(1) || "N/A"}
+                </span>
+                <br />
+                <span>Year: {year}</span>
+                <br />
+                <span>Runtime: {movie.runtime || "N/A"} min</span>
+                <br />
+                <span>Director: {director}</span>
+                <br />
               </div>
+              <div className="flex-1 text-left">
+                <span>Released: {movie.release_date || "N/A"}</span>
+                <br />
+                <span>Genre: {genres}</span>
+                <br />
+                <span>Language: {movie.original_language || "N/A"}</span>
+                <br />
+              </div>
+            </div>
 
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 1, delay: 0.4 }}
-                className="text-justify lg:px-4 xl:px-6"
-              >
-                {movie.Plot}
-              </motion.p>
-            </motion.div>
-
-            <motion.div
+            <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 1, delay: 0.6 }}
-              className="flex gap-8 md:gap-10 text-gray-700"
+              transition={{ duration: 1, delay: 0.4 }}
+              className="text-justify lg:px-4 xl:px-6"
             >
-              <button
-                className={`px-6 py-2.5 border border-gray-300 rounded-full hover:bg-gray-300 transition-colors duration-500 ${
-                  movie?.watched === false
-                    ? "bg-gray-300 cursor-not-allowed "
-                    : ""
-                }`}
-                onClick={handleAddToWatchlist}
-              >
-                {isLoading ? "Adding..." : "Want to Watch ?"}
-              </button>
-              <button
-                className={`px-6 py-2.5 border border-gray-300 rounded-full hover:bg-gray-300 transition-colors duration-500 ${
-                  movie?.watched === true
-                    ? "bg-gray-300 cursor-not-allowed"
-                    : ""
-                }`}
-                onClick={handleAddToWatched}
-              >
-                {isLoading2 ? "Adding..." : "Watched ?"}
-              </button>
-            </motion.div>
+              {movie.overview}
+            </motion.p>
           </motion.div>
-        )}
-      </div>
-    </>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 0.6 }}
+            className="flex gap-8 md:gap-10 text-gray-700"
+          >
+            <button
+              className={`px-6 py-2.5 border border-gray-300 rounded-full hover:bg-gray-300 transition-colors duration-500 ${movie?.watched === false
+                  ? "bg-gray-300 cursor-not-allowed "
+                  : ""
+                }`}
+              onClick={handleAddToWatchlist}
+            >
+              {isLoading ? "Adding..." : "Want to Watch ?"}
+            </button>
+            <button
+              className={`px-6 py-2.5 border border-gray-300 rounded-full hover:bg-gray-300 transition-colors duration-500 ${movie?.watched === true
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : ""
+                }`}
+              onClick={handleAddToWatched}
+            >
+              {isLoading2 ? "Adding..." : "Watched ?"}
+            </button>
+          </motion.div>
+        </motion.div>
+      )}
+    </div>
   );
 }

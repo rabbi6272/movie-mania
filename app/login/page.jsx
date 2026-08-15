@@ -9,15 +9,13 @@ import { auth } from "@/utils/db/firebaseConfig";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import toast from "react-hot-toast";
-import { useLocalStorage } from "@/store/store";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function LoginForm() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const router = useRouter();
 
-  const userID = useLocalStorage((state) => state.userID);
-  const setUserID = useLocalStorage((state) => state.setUserID);
-  console.log("userID: ", userID);
+  const { userID, login } = useAuth();
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -31,7 +29,7 @@ export default function LoginForm() {
     const password = formData.password;
     const loginPromise = signInWithEmailAndPassword(auth, email, password).then(
       (userCredential) => {
-        setUserID(userCredential.user.uid);
+        login(userCredential.user.uid);
         router.push("/");
       },
     );

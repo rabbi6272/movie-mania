@@ -14,7 +14,7 @@ import { SmallMovieCard } from "@/components/smallMovieCard";
 import { Loader } from "@/components/loader";
 import { SeparateMoviePage } from "../components/SeparateMoviePage";
 
-import { useLocalStorage, useMovieStore } from "@/store/store";
+import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAllMovies } from "@/utils/db/connectDB";
 import { useSearchMovies } from "@/hooks/useSearchMovies";
@@ -24,8 +24,7 @@ export default function HomePage() {
   const [isShowingMovies, setIsShowingMovies] = useState(false);
   const [selectedMovieId, setSelectedMovieId] = useState("");
 
-  const userID = useLocalStorage((state) => state.userID);
-  const setUserID = useLocalStorage((state) => state.setUserID);
+  const { userID } = useAuth();
 
   const queryClient = useQueryClient();
 
@@ -35,10 +34,6 @@ export default function HomePage() {
     enabled: !!userID,
     staleTime: 2 * 60 * 1000,
   });
-
-  useEffect(() => {
-    setUserID(localStorage.getItem("userID"));
-  }, [setUserID]);
 
   const { searchedMovies, searchLoading, searchError } = useSearchMovies();
 

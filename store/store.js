@@ -1,6 +1,9 @@
 import { create } from "zustand";
 
 export const useMovieStore = create((set) => ({
+  userID: null,
+  setUserID: (userID) => set({ userID }),
+
   savedMovies: [],
   setSavedMovies: (savedMovies) => set({ savedMovies }),
 
@@ -44,16 +47,4 @@ export const useMovieStore = create((set) => ({
         maxRating: null,
       },
     }),
-}));
-
-export const useLocalStorage = create((set) => ({
-  userID: null,
-  setUserID: (userID) => {
-    if (userID) {
-      localStorage.setItem("userID", userID);
-    } else {
-      localStorage.removeItem("userID");
-    }
-    set({ userID });
-  },
 }));

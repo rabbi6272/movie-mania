@@ -1,13 +1,16 @@
 "use client";
-import { useState, useCallback, useRef } from "react";
+import { useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { searchMovies } from "@/api/tmdb";
 import { normalizeMovieForCard } from "@/api/tmdb";
+import { useMovieStore } from "@/store/store";
 
 export function useSearchMovies() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchPage, setSearchPage] = useState(1);
-  const controllerRef = useRef(null);
+  const searchQuery = useMovieStore((state) => state.searchQuery);
+  const setSearchQuery = useMovieStore((state) => state.setSearchQuery);
+  const searchPage = useMovieStore((state) => state.searchPage);
+  const setSearchPage = useMovieStore((state) => state.setSearchPage);
+  const setSearchedMovies = useMovieStore((state) => state.setSearchedMovies);
 
   const {
     data: searchedMovies = [],
@@ -24,14 +27,17 @@ export function useSearchMovies() {
     placeholderData: (prev) => prev,
   });
 
-  const searchForMovies = useCallback((query) => {
-    setSearchQuery(query);
-    setSearchPage(1);
-  }, []);
+  const searchForMovies = useCallback(
+    (query) => {
+      setSearchQuery(query);
+      setSearchPage(1);
+    },
+    [setSearchQuery, setSearchPage],
+  );
 
   return {
-    query: searchQuery,
-    setQuery: searchForMovies,
+    searchQuery,
+    setSearchQuery: searchForMovies,
     searchedMovies,
     searchLoading,
     searchError: searchError?.message || null,

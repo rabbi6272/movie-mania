@@ -6,7 +6,8 @@ import { Loader } from "@/components/loader";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { addMovie, updateMovie } from "@/utils/db/connectDB";
-import { useLocalStorage, useMovieStore } from "@/store/store";
+import { useMovieStore } from "@/store/store";
+import { useAuth } from "@/hooks/useAuth";
 import { getMovieDetails, getPosterURL } from "@/api/tmdb";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -19,7 +20,7 @@ export function SeparateMoviePage({
   const [isLoading, setIsLoading] = useState(false);
   const [isLoading2, setIsLoading2] = useState(false);
 
-  const userID = useLocalStorage((state) => state.userID);
+  const { userID } = useAuth();
   const savedMovies = useMovieStore((state) => state.savedMovies);
   const router = useRouter();
   const queryClient = useQueryClient();

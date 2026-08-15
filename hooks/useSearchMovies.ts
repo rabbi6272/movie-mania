@@ -10,7 +10,6 @@ export function useSearchMovies() {
   const setSearchQuery = useMovieStore((state) => state.setSearchQuery);
   const searchPage = useMovieStore((state) => state.searchPage);
   const setSearchPage = useMovieStore((state) => state.setSearchPage);
-  const setSearchedMovies = useMovieStore((state) => state.setSearchedMovies);
 
   const {
     data: searchedMovies = [],
@@ -28,7 +27,7 @@ export function useSearchMovies() {
   });
 
   const searchForMovies = useCallback(
-    (query) => {
+    (query: string) => {
       setSearchQuery(query);
       setSearchPage(1);
     },

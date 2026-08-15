@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -17,7 +17,6 @@ import { SeparateMoviePage } from "../components/SeparateMoviePage";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAllMovies } from "@/utils/db/connectDB";
-import { useSearchMovies } from "@/hooks/useSearchMovies";
 
 export default function HomePage() {
   const [category, setCategory] = useState("all");
@@ -35,16 +34,13 @@ export default function HomePage() {
     staleTime: 2 * 60 * 1000,
   });
 
-  const { searchedMovies, searchLoading, searchError } = useSearchMovies();
-
-  const filteredMovies = useMemo(() => {
-    if (searchedMovies?.length > 0) return searchedMovies;
+  const filteredMovies = (() => {
     if (category === "wantToWatch")
       return savedMovies?.filter((movie) => movie.watched === false);
     if (category === "watched")
       return savedMovies?.filter((movie) => movie.watched === true);
     return savedMovies;
-  }, [searchedMovies, category, savedMovies]);
+  })();
 
   useEffect(() => {
     if (!isShowingMovies && userID) {
@@ -52,20 +48,10 @@ export default function HomePage() {
     }
   }, [isShowingMovies, userID, queryClient]);
 
-  if (searchLoading || moviesLoading) {
+  if (moviesLoading) {
     return (
       <div className="w-full h-[calc(100vh-70px)] flex items-center justify-center">
         <Loader />
-      </div>
-    );
-  }
-
-  if (searchError) {
-    return (
-      <div className="w-full h-[calc(100vh-70px)] flex items-center justify-center">
-        <h1 className="text-xl font-semibold text-red-400">
-          Error: {searchError}
-        </h1>
       </div>
     );
   }

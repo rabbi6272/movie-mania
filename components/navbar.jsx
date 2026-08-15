@@ -3,22 +3,19 @@ import { useState, useRef, useEffect } from "react";
 
 import { ttTrailers } from "@/app/ui/fonts";
 
-import { useSearchMovies } from "@/hooks/useSearchMovies";
 import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
 
 export default function Navbar() {
-  const { searchQuery, setSearchQuery } = useSearchMovies();
-
   return (
     <>
-      <SmallNavbar query={searchQuery} setQuery={setSearchQuery} />
-      <LargeNavbar query={searchQuery} setQuery={setSearchQuery} />
+      <SmallNavbar />
+      <LargeNavbar />
     </>
   );
 }
 
-function SmallNavbar({ query, setQuery }) {
+function SmallNavbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
@@ -43,18 +40,25 @@ function SmallNavbar({ query, setQuery }) {
           <Link href="/">MoviesHub</Link>
         </h1>
         <div className="flex items-center gap-3 text-gray-800">
+          <Link href="/search">
+            <span className="material-symbols-outlined text-gray-700">
+              search
+            </span>
+          </Link>
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setShowDropdown(!showDropdown)}
-              className={`cursor-pointer w-9 h-9 rounded-full flex items-center justify-center transition-colors ${isAuthenticated
-                ? "bg-blue-500 hover:bg-blue-600"
-                : "bg-gray-200 hover:bg-gray-300"
-                }`}
+              className={`cursor-pointer w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
+                isAuthenticated
+                  ? "bg-blue-500 hover:bg-blue-600"
+                  : "bg-gray-200 hover:bg-gray-300"
+              }`}
               title={isAuthenticated ? "Account" : "Login"}
             >
               <span
-                className={`material-symbols-outlined text-[20px] ${isAuthenticated ? "text-white" : "text-gray-600"
-                  }`}
+                className={`material-symbols-outlined text-[20px] ${
+                  isAuthenticated ? "text-white" : "text-gray-600"
+                }`}
               >
                 person
               </span>
@@ -113,20 +117,22 @@ function SmallNavbar({ query, setQuery }) {
         <div
           className={`relative w-full pb-2 px-4 ${isOpen ? "show" : "hide"}`}
         >
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search for movies..."
-            className="w-full h-12 rounded-full border border-gray-400 focus:outline focus:outline-blue-400 px-5 text-gray-700 placeholder:text-gray-400"
-          />
+          <Link
+            href="/search"
+            className="flex items-center gap-2 w-full h-12 rounded-full border border-gray-400 px-5 text-gray-400"
+          >
+            <span className="material-symbols-outlined text-gray-400">
+              search
+            </span>
+            Search for movies...
+          </Link>
         </div>
       )}
     </div>
   );
 }
 
-function LargeNavbar({ query, setQuery }) {
+function LargeNavbar() {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
   const { isAuthenticated, logout } = useAuth();
@@ -149,26 +155,30 @@ function LargeNavbar({ query, setQuery }) {
         <Link href="/">MoviesHub</Link>
       </h1>
       <div className="flex items-center gap-4 relative w-full justify-end">
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search for movies..."
-          className="md:w-1/2 lg:w-[45%] xl:w-[35%] h-12 rounded-full border border-gray-400 focus:outline focus:outline-blue-400 px-5 text-gray-700 placeholder:text-gray-400"
-        />
+        <Link
+          href="/search"
+          className="flex items-center gap-2 h-12 rounded-full border border-gray-400 px-5 text-gray-400 hover:border-gray-500 transition-colors"
+        >
+          <span className="material-symbols-outlined text-gray-400">
+            search
+          </span>
+          <span className="hidden md:inline">Search for movies...</span>
+        </Link>
 
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setShowDropdown(!showDropdown)}
-            className={`cursor-pointer w-9 h-9 rounded-full flex items-center justify-center transition-colors ${isAuthenticated
-              ? "bg-blue-500 hover:bg-blue-600"
-              : "bg-gray-200 hover:bg-gray-300"
-              }`}
+            className={`cursor-pointer w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
+              isAuthenticated
+                ? "bg-blue-500 hover:bg-blue-600"
+                : "bg-gray-200 hover:bg-gray-300"
+            }`}
             title={isAuthenticated ? "Account" : "Login"}
           >
             <span
-              className={`material-symbols-outlined text-[20px] ${isAuthenticated ? "text-white" : "text-gray-600"
-                }`}
+              className={`material-symbols-outlined text-[20px] ${
+                isAuthenticated ? "text-white" : "text-gray-600"
+              }`}
             >
               person
             </span>

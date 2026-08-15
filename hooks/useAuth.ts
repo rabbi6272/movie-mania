@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { useMovieStore } from "@/store/store";
+import { useAuthStore, useMovieStore } from "@/store/store";
 
 const AUTH_STORAGE_KEY = "userID";
 
@@ -11,7 +11,7 @@ function getStoredUserID() {
   return localStorage.getItem(AUTH_STORAGE_KEY);
 }
 
-function setStoredUserID(uid) {
+function setStoredUserID(uid: string | null) {
   if (uid) {
     localStorage.setItem(AUTH_STORAGE_KEY, uid);
   } else {
@@ -20,9 +20,10 @@ function setStoredUserID(uid) {
 }
 
 export function useAuth() {
-  const userID = useMovieStore((state) => state.userID);
-  const setUserID = useMovieStore((state) => state.setUserID);
-  const setSearchedMovies = useMovieStore((state) => state.setSearchedMovies);
+  const userID = useAuthStore((state) => state.userID);
+  const setUserID = useAuthStore((state) => state.setUserID);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const setIsAuthenticated = useAuthStore((state) => state.setIsAuthenticated);
   const setSearchQuery = useMovieStore((state) => state.setSearchQuery);
   const setSearchPage = useMovieStore((state) => state.setSearchPage);
   const router = useRouter();
@@ -34,16 +35,21 @@ export function useAuth() {
     }
   }, []);
 
-  const login = (uid) => {
+  const login = (uid: string) => {
+    if (!uid) {
+      toast.error("Invalid user ID");
+      return;
+    }
     setStoredUserID(uid);
+    setIsAuthenticated(true);
     setUserID(uid);
   };
 
   const logout = () => {
     setStoredUserID(null);
     setUserID(null);
+    setIsAuthenticated(false);
     setSearchQuery("");
-    setSearchedMovies([]);
     setSearchPage(1);
     toast.success("Logged out successfully");
     router.push("/");
@@ -51,7 +57,7 @@ export function useAuth() {
 
   return {
     userID,
-    isAuthenticated: !!userID,
+    isAuthenticated,
     login,
     logout,
   };

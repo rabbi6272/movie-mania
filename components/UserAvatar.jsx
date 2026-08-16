@@ -4,10 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
 
-import { onAuthStateChanged } from "firebase/auth";
-
-import { auth } from "@/utils/db/firebaseConfig";
-
+import { useAuth } from "@/hooks/useAuth";
 import { useAuthStore, useMovieStore } from "@/store/store";
 import Image from "next/image";
 
@@ -65,18 +62,19 @@ export function UserAvatar({
   size = "md",
   className = "",
   photoURL = null,
-  displayName = 'Fazle Rabbi',
+  displayName = null,
   email = null,
 }) {
   const [isShowDropdown, setIsShowDropdown] = useState(false);
   const toggleDropdown = useCallback(() => setIsShowDropdown((prev) => !prev), []);
   const closeDropdown = useCallback(() => setIsShowDropdown(false), []);
   const dropdownRef = useRef(null);
-  const user = useAuthStore((state) => state.user);
+
+  const { user, isAuthenticated, logout } = useAuth();
 
   const initials = useMemo(
-    () => getInitials(displayName, email),
-    [displayName, email],
+    () => getInitials(displayName || user?.displayName, email),
+    [displayName, email, user?.displayName],
   );
   const colorKey = email ?? "";
   const bgColor = useMemo(() => getAvatarColor(colorKey), [colorKey]);
@@ -86,29 +84,38 @@ export function UserAvatar({
   const avatarAlt = displayName ?? email ?? "User avatar";
   return (
     <>
-      {photoURL ? (
-        <Image
-          onClick={toggleDropdown}
-          src={photoURL}
-          alt={avatarAlt}
-          width={avatarSize}
-          height={avatarSize}
-          className={`relative cursor-pointer rounded-full object-cover ${sizeClass} ${className}`}
-        />
-      ) : (
+      {isAuthenticated ? (
+        // <Image
+        //   onClick={toggleDropdown}
+        //   src={photoURL}
+        //   alt={avatarAlt}
+        //   width={avatarSize}
+        //   height={avatarSize}
+        //   className={`relative cursor-pointer rounded-full object-cover ${sizeClass} ${className}`}
+        // />
+
         <div
           onClick={toggleDropdown}
           className={`flex items-center justify-center rounded-full cursor-pointer ${bgColor} text-white font-semibold ${sizeClass} ${className}`}
         >
           {initials}
         </div>
+      ) : (
+        <div
+          onClick={toggleDropdown}
+          className={`flex items-center justify-center rounded-full cursor-pointer text-black font-semibold ${sizeClass} ${className}`}
+        >
+          <span className="material-symbols-outlined text-[18px]">
+            person
+          </span>
+        </div>
       )}
       {isShowDropdown && (
         <div
-          className="absolute right-0 top-full mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
+          className="absolute right-1 top-full mt-2 w-30 lg:w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
           ref={dropdownRef}
         >
-          {user ? (
+          {isAuthenticated ? (
             <button
               onClick={() => {
                 closeDropdown();

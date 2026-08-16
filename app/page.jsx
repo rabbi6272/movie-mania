@@ -67,7 +67,7 @@ export default function HomePage() {
     );
   }
 
-  if (filteredMovies?.length > 0 && !isShowingMovies) {
+  if (!isShowingMovies) {
     return (
       <>
         <div className="w-full h-auto py-2 pl-2 md:pl-6 flex items-center">
@@ -79,7 +79,7 @@ export default function HomePage() {
             onValueChange={(value) => setCategory(value)}
             defaultValue={category}
           >
-            <SelectTrigger className="w-[200px] border-gray-400 text-gray-600">
+            <SelectTrigger className="w-[100px] lg:w-[150px] 2xl:w-[200px] border-gray-400 text-gray-600">
               <SelectValue placeholder="Select a category" />
             </SelectTrigger>
             <SelectContent>

@@ -36,17 +36,24 @@ export const SmallMovieCard = memo(function SmallMovieCard({
           </div>
         )}
         {movie.vote_average > 0 && (
-          <div className="absolute top-1 right-1 bg-black/70 text-white text-xs font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5">
+          <div className="absolute top-0.5 lg:top-1.5 right-0.5 lg:right-1.5 bg-black/70 text-white text-[10px] lg:text-[12px] font-semibold px-1.5 py-0.5 rounded-full flex items-center justify-center gap-0.5">
             <span className="text-yellow-400">★</span>
             {movie.vote_average.toFixed(1)}
           </div>
         )}
+        {movie.watched === true && (
+          <div className="absolute top-0.5 lg:top-1.5 left-0.5 lg:left-1.5 bg-green-500/80 text-white rounded-full p-0.5">
+            <svg className="w-2.5 lg:w-3.5 h-2.5 lg:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+        )}
       </div>
       <div className="p-2 w-full">
-        <h3 className="text-gray-700 text-xs sm:text-sm font-medium line-clamp-2 leading-tight">
+        <h3 className="text-gray-700 text-sm lg:text-base font-semibold line-clamp-2 leading-tight">
           {movie.title}
         </h3>
-        <p className="text-[11px] sm:text-xs text-gray-400 mt-0.5">{year}</p>
+        <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5">{year}</p>
       </div>
     </div>
   );

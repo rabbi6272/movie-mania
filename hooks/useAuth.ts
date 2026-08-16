@@ -4,8 +4,15 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
 import { useAuthStore, useMovieStore } from "@/store/store";
+
 import { auth } from "@/utils/db/firebaseConfig";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut,
+  updateProfile,
+} from "firebase/auth";
 
 const AUTH_STORAGE_KEY = "userID";
 
@@ -34,10 +41,24 @@ export function useAuth() {
   const router = useRouter();
 
   useEffect(() => {
-    const stored = getStoredUserID();
-    if (stored && stored !== userID) {
-      setUserID(stored);
-    }
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        setUser(firebaseUser);
+        setUserID(firebaseUser.uid);
+        setIsAuthenticated(true);
+        setStoredUserID(firebaseUser.uid);
+      } else {
+        const stored = getStoredUserID();
+        if (stored) {
+          setStoredUserID(null);
+        }
+        setUser(null);
+        setUserID(null);
+        setIsAuthenticated(false);
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -47,26 +68,29 @@ export function useAuth() {
       return;
     }
     const uid = savedUser.user.uid;
-    setUser(savedUser.user);
+    setUser(auth.currentUser);
     setStoredUserID(uid);
     setIsAuthenticated(true);
     setUserID(uid);
   };
 
-  const signup = async (email: string, password: string) => {
+  const signup = async (fullName: string, email: string, password: string) => {
     const savedUser = await createUserWithEmailAndPassword(auth, email, password);
     if (!savedUser) {
       toast.error("Signup failed");
       return;
     }
+    await updateProfile(savedUser.user, { displayName: fullName });
+
     const userID = savedUser.user.uid;
-    setUser(savedUser.user);
+    setUser(auth.currentUser);
     setStoredUserID(userID);
     setIsAuthenticated(true);
     setUserID(userID);
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await signOut(auth);
     setUser(null);
     setStoredUserID(null);
     setUserID(null);
@@ -78,6 +102,7 @@ export function useAuth() {
   };
 
   return {
+    user,
     userID,
     isAuthenticated,
     signup,

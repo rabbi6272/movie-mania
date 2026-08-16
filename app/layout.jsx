@@ -1,17 +1,15 @@
-import { Nunito } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/navbar";
+
 import { Toaster } from "react-hot-toast";
 import Link from "next/link";
+
+import Navbar from "@/components/navbar";
 import Providers from "@/components/Providers";
 
-const nunito = Nunito({
-  subsets: ["latin"],
-  variable: "--font-nunito",
-});
+import { nunito } from "./ui/fonts";
 
 export const metadata = {
-  title: "MoviesHub || Solution for all your movie needs",
+  title: "MovieMania || Solution for all your movie needs",
   description: "All your favorite movies in one place",
 };
 
@@ -29,14 +27,14 @@ export default function RootLayout({ children }) {
           name="keywords"
           content="movies, streaming, watch, films, cinema, online"
         />
-        <meta name="author" content="MoviesHub" />
-        <title>MoviesHub || Solution for all your movie needs</title>
+        <meta name="author" content="MovieMania" />
+        <title>MovieMania || Solution for all your movie needs</title>
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://movieshub.example.com/" />
+        <meta property="og:url" content="https://movimania.example.com/" />
         <meta
           property="og:title"
-          content="MoviesHub || Solution for all your movie needs"
+          content="MovieMania || Solution for all your movie needs"
         />
         <meta
           property="og:description"
@@ -48,7 +46,7 @@ export default function RootLayout({ children }) {
         <meta name="twitter:url" content="https://movieshub.example.com/" />
         <meta
           name="twitter:title"
-          content="MoviesHub || Solution for all your movie needs"
+          content="MovieMania || Solution for all your movie needs"
         />
         <meta
           name="twitter:description"
@@ -61,20 +59,21 @@ export default function RootLayout({ children }) {
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
         />
-        <script src="https://cdn.lordicon.com/lordicon.js" defer></script>
       </head>
       <body
-        className={`${nunito.className} antialiased min-h-screen bg-gray-50 text-gray-600`}
+        className={`${nunito.className} antialiased bg-gray-50 text-gray-600 bg-gray-100`}
       >
         <Providers>
           <Toaster
             position="top-center"
             toastOptions={{
-              duration: 1500,
+              duration: 2000,
             }}
           />
           <Navbar />
-          <main className="min-h-[calc(100vh-70px-32px)]">{children}</main>
+          <main className="min-h-[calc(100vh-70px-32px)]">
+            {children}
+          </main>
 
           <footer>
             <p className="text-sm text-gray-500 text-center pb-3">

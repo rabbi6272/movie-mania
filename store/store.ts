@@ -63,12 +63,18 @@ interface AuthState {
   userID: string | null;
   setUserID: (userID: string | null) => void;
 
+  user: any;
+  setUser: (user: any) => void;
+
   isAuthenticated: boolean;
   setIsAuthenticated: (isAuthenticated: boolean) => void;
 }
 export const useAuthStore = create<AuthState>((set) => ({
   userID: null,
   setUserID: (userID) => set({ userID }),
+
+  user: null,
+  setUser: (user) => set({ user }),
 
   isAuthenticated: false,
   setIsAuthenticated: (isAuthenticated) => set({ isAuthenticated }),

@@ -2,7 +2,10 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+
 import { useAuthStore, useMovieStore } from "@/store/store";
+import { auth } from "@/utils/db/firebaseConfig";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 
 const AUTH_STORAGE_KEY = "userID";
 
@@ -20,6 +23,8 @@ function setStoredUserID(uid: string | null) {
 }
 
 export function useAuth() {
+  const user = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
   const userID = useAuthStore((state) => state.userID);
   const setUserID = useAuthStore((state) => state.setUserID);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -35,17 +40,34 @@ export function useAuth() {
     }
   }, []);
 
-  const login = (uid: string) => {
-    if (!uid) {
-      toast.error("Invalid user ID");
+  const login = async (email: string, password: string) => {
+    const savedUser = await signInWithEmailAndPassword(auth, email, password);
+    if (!savedUser) {
+      toast.error("Login failed");
       return;
     }
+    const uid = savedUser.user.uid;
+    setUser(savedUser.user);
     setStoredUserID(uid);
     setIsAuthenticated(true);
     setUserID(uid);
   };
 
+  const signup = async (email: string, password: string) => {
+    const savedUser = await createUserWithEmailAndPassword(auth, email, password);
+    if (!savedUser) {
+      toast.error("Signup failed");
+      return;
+    }
+    const userID = savedUser.user.uid;
+    setUser(savedUser.user);
+    setStoredUserID(userID);
+    setIsAuthenticated(true);
+    setUserID(userID);
+  };
+
   const logout = () => {
+    setUser(null);
     setStoredUserID(null);
     setUserID(null);
     setIsAuthenticated(false);
@@ -58,6 +80,7 @@ export function useAuth() {
   return {
     userID,
     isAuthenticated,
+    signup,
     login,
     logout,
   };

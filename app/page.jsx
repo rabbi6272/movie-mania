@@ -94,7 +94,7 @@ export default function HomePage() {
         </div>
 
         <div className="w-full grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 xl:grid-cols-8 2xl:grid-cols-10 gap-2 px-4 my-2">
-          {filteredMovies?.map((movie, index) => (
+          {filteredMovies.length > 0 ? ( filteredMovies?.map((movie, index) => (
             <SmallMovieCard
               key={movie.tmdbId || movie.id || index}
               movie={movie}
@@ -102,16 +102,16 @@ export default function HomePage() {
               setSelectedMovieId={setSelectedMovieId}
               setIsShowingMovies={setIsShowingMovies}
             />
-          ))}
+          )) : (
+<div className="w-full h-[calc(100vh-70px)] flex flex-col items-center justify-center">
+      <h1 className="text-2xl font-semibold text-gray-600">No movies saved</h1>
+      <p className="text-sm text-gray-400">Try searching for a movie.</p>
+    </div>
+
+)}
         </div>
       </>
     );
   }
 
-  return (
-    <div className="w-full h-[calc(100vh-70px)] flex flex-col items-center justify-center">
-      <h1 className="text-2xl font-semibold text-gray-600">No movies saved</h1>
-      <p className="text-sm text-gray-400">Try searching for a movie.</p>
-    </div>
-  );
 }

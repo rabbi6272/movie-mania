@@ -1,10 +1,13 @@
 "use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
-import { Loader } from "@/components/loader";
-import { useState } from "react";
 import toast from "react-hot-toast";
+
+import { Loader } from "@/components/loader";
+import { Button } from "@/components/ui/button";
 import { addMovie, updateMovie } from "@/utils/db/connectDB";
 import { useMovieStore } from "@/store/store";
 import { useAuth } from "@/hooks/useAuth";
@@ -157,13 +160,16 @@ export function SeparateMoviePage({
     }
   }
 
+  if (loading) {
+    return (
+      <div className="h-full w-full grid place-items-center">
+        <Loader />
+      </div>
+    )
+  }
+
   return (
     <div className="relative my-4 p-2 md:p-3 w-[95%] md:w-[60%] lg:w-[50%] mx-auto rounded-lg bg-white text-gray-500 flex flex-col items-center justify-between shadow-md">
-      {loading && (
-        <div className="h-full w-full grid place-items-center">
-          <Loader />
-        </div>
-      )}
       <button
         className="absolute top-[5px] left-[5px] md:top-[10px] md:left-[10px] h-[40px] w-[40px] rounded-full bg-gray-100 active:scale-95 transition duration-300 grid place-items-center cursor-pointer z-10"
         onClick={() => {
@@ -218,24 +224,22 @@ export function SeparateMoviePage({
           </div>
 
           <div className="flex gap-8 md:gap-10 text-gray-700 animate-fadeIn animation-delay-400">
-            <button
-              className={`px-6 py-2.5 border border-gray-300 rounded-full hover:bg-gray-300 transition-colors duration-500 ${
-                movie?.watched === false
-                  ? "bg-gray-300 cursor-not-allowed "
-                  : ""
-              }`}
+            <Button varient="outline" size="lg"
+              className={`font-semibold px-6 py-2.5 border border-gray-300 rounded-full hover:bg-gray-300 transition-colors duration-500 ${movie?.watched === false
+                ? "bg-gray-300 cursor-not-allowed "
+                : ""
+                }`}
               onClick={handleAddToWatchlist}
             >
               {isLoading ? "Adding..." : "Want to Watch ?"}
-            </button>
-            <button
-              className={`px-6 py-2.5 border border-gray-300 rounded-full hover:bg-gray-300 transition-colors duration-500 ${
-                movie?.watched === true ? "bg-gray-300 cursor-not-allowed" : ""
-              }`}
+            </Button>
+            <Button varient="outline" size="lg"
+              className={`font-semibold px-6 py-2.5 border border-gray-300 rounded-full hover:bg-gray-300 transition-colors duration-500 ${movie?.watched === true ? "bg-gray-300 cursor-not-allowed" : ""
+                }`}
               onClick={handleAddToWatched}
             >
               {isLoading2 ? "Adding..." : "Watched ?"}
-            </button>
+            </Button>
           </div>
         </div>
       )}

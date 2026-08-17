@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useMovieStore } from "@/store/store";
 import {
   Select,
   SelectContent,
@@ -17,6 +18,7 @@ import { SeparateMoviePage } from "../components/SeparateMoviePage";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAllMovies } from "@/utils/db/connectDB";
+import Link from "next/link";
 
 export default function HomePage() {
   const [category, setCategory] = useState("all");
@@ -26,6 +28,7 @@ export default function HomePage() {
   const { userID } = useAuth();
 
   const queryClient = useQueryClient();
+  const setSavedMovies = useMovieStore((state) => state.setSavedMovies);
 
   const { data: savedMovies = [], isLoading: moviesLoading } = useQuery({
     queryKey: ["movies", userID],
@@ -47,6 +50,12 @@ export default function HomePage() {
       queryClient.invalidateQueries({ queryKey: ["movies", userID] });
     }
   }, [isShowingMovies, userID, queryClient]);
+
+  useEffect(() => {
+    if (savedMovies) {
+      setSavedMovies(savedMovies);
+    }
+  }, [savedMovies, setSavedMovies]);
 
   if (moviesLoading) {
     return (
@@ -70,8 +79,7 @@ export default function HomePage() {
   if (!isShowingMovies) {
     return (
       <>
-        <div className="w-full h-auto py-2 pl-2 md:pl-6 flex items-center">
-          {" "}
+        <div className="w-full py-3 px-4 md:pl-6 flex items-center">
           <span className="material-symbols-outlined text-gray-400 text-lg">
             filter_alt
           </span>
@@ -79,12 +87,12 @@ export default function HomePage() {
             onValueChange={(value) => setCategory(value)}
             defaultValue={category}
           >
-            <SelectTrigger className="w-[100px] lg:w-[150px] 2xl:w-[200px] border-gray-400 text-gray-600">
+            <SelectTrigger className="bg-white w-[150px] border-gray-400 text-gray-600 rounded-full font-medium text-sm">
               <SelectValue placeholder="Select a category" />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectLabel>Movies</SelectLabel>
+                <SelectLabel>Catagory</SelectLabel>
                 <SelectItem value="all">All</SelectItem>
                 <SelectItem value="watched">Watched</SelectItem>
                 <SelectItem value="wantToWatch">Want to watch</SelectItem>
@@ -93,23 +101,28 @@ export default function HomePage() {
           </Select>
         </div>
 
-        <div className="w-full grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 xl:grid-cols-8 2xl:grid-cols-10 gap-2 px-4 my-2">
-          {filteredMovies.length > 0 ? ( filteredMovies?.map((movie, index) => (
-            <SmallMovieCard
-              key={movie.tmdbId || movie.id || index}
-              movie={movie}
-              index={index}
-              setSelectedMovieId={setSelectedMovieId}
-              setIsShowingMovies={setIsShowingMovies}
-            />
-          )) : (
-<div className="w-full h-[calc(100vh-70px)] flex flex-col items-center justify-center">
-      <h1 className="text-2xl font-semibold text-gray-600">No movies saved</h1>
-      <p className="text-sm text-gray-400">Try searching for a movie.</p>
-    </div>
-
-)}
-        </div>
+        {filteredMovies.length > 0 ? (
+          <div className="w-full grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 xl:grid-cols-8 2xl:grid-cols-10 gap-2 px-4 my-2">
+            {filteredMovies?.map((movie, index) => (
+              <SmallMovieCard
+                key={movie.tmdbId || movie.id || index}
+                movie={movie}
+                index={index}
+                setSelectedMovieId={setSelectedMovieId}
+                setIsShowingMovies={setIsShowingMovies}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="w-full pt-15 flex flex-col items-center justify-center">
+            <h1 className="text-2xl font-semibold text-gray-600">No movies saved</h1>
+            <p className="text-sm text-gray-400">Try 
+              <Link href="/search" className="text-blue-500 hover:underline">
+              searching
+              </Link> for a movie.
+            </p>
+          </div>
+        )}
       </>
     );
   }

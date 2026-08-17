@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
 import { Loader } from "@/components/loader";
-import { Button } from "@/components/ui/button";
+import { Button } from "@heroui/react";
 import { addMovie, updateMovie } from "@/utils/db/connectDB";
 import { useMovieStore } from "@/store/store";
 import { useAuth } from "@/hooks/useAuth";
@@ -225,16 +225,20 @@ export function SeparateMoviePage({
 
           <div className="flex gap-8 md:gap-10 text-gray-700 animate-fadeIn animation-delay-400">
             <Button varient="outline" size="lg"
-              className={`font-semibold px-6 py-2.5 border border-gray-300 rounded-full hover:bg-gray-300 transition-colors duration-500 ${movie?.watched === false
-                ? "bg-gray-300 cursor-not-allowed "
-                : ""
+              className={`font-semibold px-6 py-2.5 border border-gray-300 rounded-full
+                ${movie?.watched === false
+                  ? "bg-black text-white cursor-not-allowed "
+                  : ""
                 }`}
               onClick={handleAddToWatchlist}
             >
               {isLoading ? "Adding..." : "Want to Watch ?"}
             </Button>
             <Button varient="outline" size="lg"
-              className={`font-semibold px-6 py-2.5 border border-gray-300 rounded-full hover:bg-gray-300 transition-colors duration-500 ${movie?.watched === true ? "bg-gray-300 cursor-not-allowed" : ""
+              className={`font-semibold px-6 py-2.5 border border-gray-300 rounded-full
+                ${movie?.watched === true
+                  ? "bg-black text-white cursor-not-allowed "
+                  : ""
                 }`}
               onClick={handleAddToWatched}
             >

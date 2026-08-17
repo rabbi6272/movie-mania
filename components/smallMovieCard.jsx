@@ -14,14 +14,14 @@ export const SmallMovieCard = memo(function SmallMovieCard({
 
   return (
     <div
-      className="h-auto w-full mx-auto rounded-lg border border-gray-200 flex flex-col cursor-pointer hover:bg-gray-100 transition-colors duration-300 shadow-md overflow-hidden group animate-fadeIn"
+      className="h-auto w-full mx-auto rounded-lg border border-gray-200 flex flex-col cursor-pointer bg-white transition-colors duration-300 shadow-md hover:shadow-lg overflow-hidden group animate-fadeIn"
       style={{ animationDelay: `${index * 30}ms` }}
       onClick={() => {
         setSelectedMovieId(movie.tmdbId || movie.id);
         setIsShowingMovies(true);
       }}
     >
-      <div className="relative w-full aspect-[2/3] overflow-hidden bg-gray-100">
+      <div className="relative w-full aspect-[3/4] overflow-hidden">
         {posterURL ? (
           <Image
             fill
@@ -50,7 +50,7 @@ export const SmallMovieCard = memo(function SmallMovieCard({
         )}
       </div>
       <div className="p-2 w-full">
-        <h3 className="text-gray-700 text-sm lg:text-base font-semibold line-clamp-2 leading-tight">
+        <h3 className="text-gray-700 text-sm lg:text-base font-semibold line-clamp-2 leading-tight text-nowrap">
           {movie.title}
         </h3>
         <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5">{year}</p>

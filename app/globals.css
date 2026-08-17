@@ -1,7 +1,9 @@
 @import "tailwindcss";
+@import "@heroui/styles";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
+
 @theme {
   --color-pBlue-50: "#f1fafe";
   --color-pBlue-100: "#e1f3fd";
@@ -86,6 +88,7 @@ body {
   border-right-color: #25b09b;
   animation: l15 1s infinite linear;
 }
+
 .loader::before,
 .loader::after {
   content: "";
@@ -95,10 +98,12 @@ body {
   border-radius: 50%;
   animation: l15 2s infinite;
 }
+
 .loader::after {
   margin: 8px;
   animation-duration: 3s;
 }
+
 @keyframes l15 {
   100% {
     transform: rotate(1turn);
@@ -198,6 +203,7 @@ body {
 }
 
 @keyframes pulse0112 {
+
   0%,
   100% {
     transform: scale(0);
@@ -286,6 +292,7 @@ body {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -310,6 +317,7 @@ body {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useMovieStore } from "@/store/store";
 import {
   Select,
@@ -37,13 +37,13 @@ export default function HomePage() {
     staleTime: 2 * 60 * 1000,
   });
 
-  const filteredMovies = (() => {
+  const filteredMovies = useMemo(() => {
     if (category === "wantToWatch")
-      return savedMovies?.filter((movie) => movie.watched === false);
+      return savedMovies?.filter((movie) => movie.watched === false).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     if (category === "watched")
-      return savedMovies?.filter((movie) => movie.watched === true);
-    return savedMovies;
-  })();
+      return savedMovies?.filter((movie) => movie.watched === true).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    return savedMovies.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }, [category, savedMovies]);
 
   useEffect(() => {
     if (!isShowingMovies && userID) {
@@ -102,7 +102,7 @@ export default function HomePage() {
         </div>
 
         {filteredMovies.length > 0 ? (
-          <div className="w-full grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 xl:grid-cols-8 2xl:grid-cols-10 gap-2 px-4 my-2">
+          <div className="w-full grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 2xl:grid-cols-12 gap-2 px-4 my-2">
             {filteredMovies?.map((movie, index) => (
               <SmallMovieCard
                 key={movie.tmdbId || movie.id || index}
@@ -116,9 +116,9 @@ export default function HomePage() {
         ) : (
           <div className="w-full pt-15 flex flex-col items-center justify-center">
             <h1 className="text-2xl font-semibold text-gray-600">No movies saved</h1>
-            <p className="text-sm text-gray-400">Try 
+            <p className="text-sm text-gray-400">Try
               <Link href="/search" className="text-blue-500 hover:underline">
-              searching
+                searching
               </Link> for a movie.
             </p>
           </div>

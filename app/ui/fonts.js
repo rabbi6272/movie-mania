@@ -7,7 +7,7 @@ export const nunito = Nunito({
   display: "swap",
 });
 
-export const ttTrailers = localFont({
+export const ttTrailer = localFont({
   src: "./tttrailer.ttf",
   display: "swap",
   style: "italic",

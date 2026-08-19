@@ -1,4 +1,4 @@
-import { initializeApp } from "firebase/app";
+import { getApp, getApps, initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
@@ -14,7 +14,7 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
 // Initialize Firebase Authentication
 if (typeof window !== "undefined") {
@@ -28,7 +28,7 @@ if (typeof window !== "undefined") {
 
 // Initialize Firebase Authentication and get a reference to the service
 export const auth = getAuth(app);
+
 // Initialize Cloud Firestore and get a reference to the service
 export const db = getFirestore(app);
 
-export default app;

@@ -5,10 +5,10 @@ import Link from "next/link";
 
 import toast from "react-hot-toast";
 
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@heroui/react";
 
 export default function LoginForm() {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -99,8 +99,8 @@ export default function LoginForm() {
           </span>
           <span className=" text-blue-400">Forgot Password?</span>
         </p>
-        <Button type="submit" size="lg" className={"w-full rounded-full px-6 font-semibold text-md"}>
-          Log In{" "}
+        <Button type="submit" size="lg" className={"bg-black text-white w-full rounded-full px-6 font-semibold text-md"}>
+          Log In
         </Button>
       </form>
     </div>

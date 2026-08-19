@@ -2,9 +2,9 @@
 const nextConfig = {
   images: {
     remotePatterns: [
-      new URL("https://image.tmdb.org/t/p/**"),
-      new URL("https://m.media-amazon.com/images/**"),
-      new URL("https://img.youtube.com/**"),
+      { protocol: "https", hostname: "image.tmdb.org", pathname: "/t/p/**" },
+      { protocol: "https", hostname: "m.media-amazon.com", pathname: "/images/**" },
+      { protocol: "https", hostname: "img.youtube.com", pathname: "/**" },
     ],
   },
 };

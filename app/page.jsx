@@ -13,11 +13,11 @@ import {
 
 import { SmallMovieCard } from "@/components/smallMovieCard";
 import { Loader } from "@/components/loader";
-import { SeparateMoviePage } from "../components/SeparateMoviePage";
+import { SeparateMoviePage } from "@/components/SeparateMoviePage";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getAllMovies } from "@/utils/db/connectDB";
+import { getAllMovies } from "@/hooks/useMoviesServices";
 import Link from "next/link";
 
 export default function HomePage() {
@@ -102,7 +102,7 @@ export default function HomePage() {
         </div>
 
         {filteredMovies.length > 0 ? (
-          <div className="w-full grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 2xl:grid-cols-12 gap-2 px-4 my-2">
+          <div className="w-full grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 2xl:grid-cols-12 gap-2 px-4 my-2">
             {filteredMovies?.map((movie, index) => (
               <SmallMovieCard
                 key={movie.tmdbId || movie.id || index}
@@ -117,7 +117,7 @@ export default function HomePage() {
           <div className="w-full pt-15 flex flex-col items-center justify-center">
             <h1 className="text-2xl font-semibold text-gray-600">No movies saved</h1>
             <p className="text-sm text-gray-400">Try
-              <Link href="/search" className="text-blue-500 hover:underline">
+              <Link href="/search" className="text-blue-500 hover:underline pl-1">
                 searching
               </Link> for a movie.
             </p>

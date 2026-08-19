@@ -4,6 +4,7 @@ import { create } from "zustand";
 interface MovieStore {
   savedMovies: any[];
   setSavedMovies: (savedMovies: any[]) => void;
+  removeSavedMovie: (id: string) => void;
 
   searchQuery: string;
   setSearchQuery: (searchQuery: string) => void;
@@ -27,6 +28,10 @@ interface MovieStore {
 export const useMovieStore = create<MovieStore>((set) => ({
   savedMovies: [],
   setSavedMovies: (savedMovies) => set({ savedMovies }),
+  removeSavedMovie: (id) =>
+    set((state) => ({
+      savedMovies: state.savedMovies.filter((m) => m.id !== id),
+    })),
 
   searchQuery: "",
   setSearchQuery: (searchQuery) => set({ searchQuery }),

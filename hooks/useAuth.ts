@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 
 import { useAuthStore, useMovieStore } from "@/store/store";
 
-import { auth } from "@/utils/db/firebaseConfig";
+import { auth } from "@/utils/firebaseConfig";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,

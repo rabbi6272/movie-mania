@@ -50,10 +50,31 @@ export const searchMovies = async (query, page = 1, signal) => {
   );
 };
 
+export const searchMulti = async (query, page = 1, signal) => {
+  return fetchFromTMDB(
+    "/search/multi",
+    {
+      query,
+      page,
+    },
+    signal,
+  );
+};
+
 export const getMovieDetails = async (id) => {
   return fetchFromTMDB(`/movie/${id}`, {
     append_to_response: "credits,videos,similar,recommendations,external_ids",
   });
+};
+
+export const getTVDetails = async (id) => {
+  return fetchFromTMDB(`/tv/${id}`, {
+    append_to_response: "credits,videos,similar,recommendations,external_ids",
+  });
+};
+
+export const getTrendingAll = async (timeWindow = "week", page = 1) => {
+  return fetchFromTMDB(`/trending/all/${timeWindow}`, { page });
 };
 
 export const getTrendingMovies = async (timeWindow = "week", page = 1) => {
@@ -78,6 +99,10 @@ export const getUpcomingMovies = async (page = 1) => {
 
 export const getGenres = async () => {
   return fetchFromTMDB("/genre/movie/list");
+};
+
+export const getTVGenres = async () => {
+  return fetchFromTMDB("/genre/tv/list");
 };
 
 export const discoverMovies = async (filters = {}) => {
@@ -115,38 +140,42 @@ export const getPersonDetails = async (id) => {
   });
 };
 
-export const normalizeMovieForCard = (movie) => ({
-  tmdbId: movie.id,
-  title: movie.title,
-  release_date: movie.release_date,
-  poster_path: movie.poster_path,
-  backdrop_path: movie.backdrop_path,
-  overview: movie.overview,
-  vote_average: movie.vote_average,
-  vote_count: movie.vote_count,
-  genre_ids: movie.genre_ids || movie.genres?.map((g) => g.id) || [],
+export const normalizeMovieForCard = (item) => ({
+  tmdbId: item.id,
+  media_type: item.media_type || "movie",
+  title: item.title || item.name,
+  release_date: item.release_date || item.first_air_date,
+  poster_path: item.poster_path,
+  backdrop_path: item.backdrop_path,
+  overview: item.overview,
+  vote_average: item.vote_average,
+  vote_count: item.vote_count,
+  genre_ids: item.genre_ids || item.genres?.map((g) => g.id) || [],
 });
 
 export const normalizeMovieForFirestore = (movie) => ({
   tmdbId: movie.id,
-  title: movie.title,
-  original_title: movie.original_title,
-  release_date: movie.release_date,
+  media_type: movie.media_type || "movie",
+  title: movie.title || movie.name,
+  original_title: movie.original_title || movie.original_name,
+  release_date: movie.release_date || movie.first_air_date,
   poster_path: movie.poster_path,
   backdrop_path: movie.backdrop_path,
   overview: movie.overview,
   vote_average: movie.vote_average,
   vote_count: movie.vote_count,
-  runtime: movie.runtime,
+  runtime: movie.runtime || movie.episode_run_time?.[0] || null,
   genres: movie.genres || [],
   tagline: movie.tagline,
   status: movie.status,
-  budget: movie.budget,
-  revenue: movie.revenue,
+  budget: movie.budget || null,
+  revenue: movie.revenue || null,
   homepage: movie.homepage,
-  imdb_id: movie.imdb_id,
+  imdb_id: movie.imdb_id || null,
   director:
-    movie.credits?.crew?.find((c) => c.job === "Director")?.name || null,
+    movie.credits?.crew?.find((c) => c.job === "Director")?.name ||
+    movie.created_by?.map((c) => c.name).join(", ") ||
+    null,
   cast:
     movie.credits?.cast?.slice(0, 10).map((c) => ({
       id: c.id,

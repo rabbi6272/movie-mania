@@ -8,6 +8,7 @@ export type Movie = {
     rating: number;
     posterUrl: string;
     tmdbId?: string;
+    media_type?: "movie" | "tv";
     poster_path?: string;
     backdrop_path?: string;
     overview?: string;

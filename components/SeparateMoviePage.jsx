@@ -1,51 +1,96 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 import toast from "react-hot-toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { Button } from "@heroui/react";
-import { Loader } from "@/components/loader";
-
 import { addMovie, updateMovie, deleteMovie } from "@/hooks/useMoviesServices";
 import { useMovieStore } from "@/store/store";
 import { useAuth } from "@/hooks/useAuth";
-import { getMovieDetails, getPosterURL } from "@/api/tmdb";
+import { getMovieDetails, getTVDetails, getPosterURL, getBackdropURL } from "@/api/tmdb";
 
-export function SeparateMoviePage({
-  selectedMovieId,
-  setSelectedMovieId,
-  isShowingMovies,
-  setIsShowingMovies,
-}) {
+function DetailSkeleton() {
+  return (
+    <div className="w-full min-h-[calc(100vh-102px)]">
+      <div className="relative w-full h-[40vh] md:h-[50vh] bg-gray-200 animate-pulse" />
+      <div className="w-full max-w-6xl mx-auto px-4 md:px-8 -mt-24 relative z-10">
+        <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+          <div className="w-48 md:w-64 lg:w-72 flex-shrink-0 mx-auto md:mx-0">
+            <div className="aspect-[2/3] bg-gray-200 rounded-xl animate-pulse" />
+          </div>
+          <div className="flex-1 pt-4 md:pt-16 space-y-4">
+            <div className="h-8 bg-gray-200 rounded animate-pulse w-3/4" />
+            <div className="h-4 bg-gray-200 rounded animate-pulse w-1/2" />
+            <div className="flex gap-2 mt-4">
+              <div className="h-8 w-16 bg-gray-200 rounded-full animate-pulse" />
+              <div className="h-8 w-20 bg-gray-200 rounded-full animate-pulse" />
+              <div className="h-8 w-14 bg-gray-200 rounded-full animate-pulse" />
+            </div>
+            <div className="space-y-2 mt-6">
+              <div className="h-4 bg-gray-200 rounded animate-pulse" />
+              <div className="h-4 bg-gray-200 rounded animate-pulse w-5/6" />
+              <div className="h-4 bg-gray-200 rounded animate-pulse w-2/3" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function SeparateMoviePage({ contentId, mediaType = "movie" }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoading2, setIsLoading2] = useState(false);
 
   const { userID } = useAuth();
   const savedMovies = useMovieStore((state) => state.savedMovies);
   const removeSavedMovie = useMovieStore((state) => state.removeSavedMovie);
+  const movieDetailsCache = useMovieStore((state) => state.movieDetailsCache);
+  const setMovieDetails = useMovieStore((state) => state.setMovieDetails);
   const router = useRouter();
   const queryClient = useQueryClient();
 
+  const cacheKey = `${mediaType}_${contentId}`;
   const savedMovie = savedMovies.find(
-    (m) => m.tmdbId === Number(selectedMovieId),
+    (m) => m.tmdbId === Number(contentId) && (m.media_type || "movie") === mediaType,
   );
+  const cachedMovie = movieDetailsCache[cacheKey];
 
-  const { data: movie = savedMovie || {}, isLoading: loading } = useQuery({
-    queryKey: ["movie", selectedMovieId],
-    queryFn: () => getMovieDetails(selectedMovieId),
-    enabled: !!selectedMovieId && !savedMovie,
+  const shouldFetch = !!contentId && !savedMovie && !cachedMovie;
+
+  const { data: fetchedContent, isLoading: loading } = useQuery({
+    queryKey: [mediaType, contentId],
+    queryFn: () =>
+      mediaType === "tv" ? getTVDetails(contentId) : getMovieDetails(contentId),
+    enabled: shouldFetch,
     staleTime: 30 * 60 * 1000,
   });
 
-  const posterURL = getPosterURL(movie.poster_path, "w500");
-  const year = movie.release_date?.substring(0, 4) || "N/A";
-  const genres = movie.genres?.map((g) => g.name).join(", ") || "N/A";
-  const director =
-    movie.credits?.crew?.find((c) => c.job === "Director")?.name || "N/A";
+  useEffect(() => {
+    if (fetchedContent && contentId) {
+      setMovieDetails(cacheKey, fetchedContent);
+    }
+  }, [fetchedContent, contentId, cacheKey, setMovieDetails]);
+
+  const content = savedMovie || cachedMovie || fetchedContent || {};
+  const posterURL = getPosterURL(content.poster_path, "w500");
+  const backdropURL = getBackdropURL(content.backdrop_path, "w1280");
+  const title = content.title || content.name || "N/A";
+  const year = (content.release_date || content.first_air_date)?.substring(0, 4) || "N/A";
+  const genres = content.genres || [];
+  const releaseDate = content.release_date || content.first_air_date || "N/A";
+  const rating = content.vote_average?.toFixed(1) || "N/A";
+  const tagline = content.tagline;
+
+  const creator = mediaType === "tv"
+    ? content.created_by?.map((c) => c.name).join(", ")
+    : content.credits?.crew?.find((c) => c.job === "Director")?.name;
+
+  const isWatchlisted = savedMovie && savedMovie.watched === false;
+  const isWatched = savedMovie && savedMovie.watched === true;
 
   async function handleAddToWatchlist() {
     if (!userID) {
@@ -54,45 +99,41 @@ export function SeparateMoviePage({
       return;
     }
 
-    if (savedMovie && savedMovie.watched === false) {
-      toast.error("Movie already added to watchlist");
+    if (isWatchlisted) {
+      toast.error("Already in your watchlist");
       return;
     }
 
     try {
       setIsLoading(true);
       if (savedMovie) {
-        const movieData = { ...savedMovie, watched: false };
         const { success, message } = await updateMovie(
           savedMovie.id,
-          movieData,
+          { ...savedMovie, watched: false },
           userID,
         );
         if (success) {
           toast.success(message);
           queryClient.invalidateQueries({ queryKey: ["movies", userID] });
-          setSelectedMovieId("");
-          setIsShowingMovies(!isShowingMovies);
         } else {
           toast.error(message);
         }
       } else {
         const movieData = {
-          tmdbId: movie.id,
-          title: movie.title,
-          poster_path: movie.poster_path,
-          backdrop_path: movie.backdrop_path,
-          overview: movie.overview,
-          vote_average: movie.vote_average,
-          release_date: movie.release_date,
+          tmdbId: content.id,
+          media_type: mediaType,
+          title,
+          poster_path: content.poster_path,
+          backdrop_path: content.backdrop_path,
+          overview: content.overview,
+          vote_average: content.vote_average,
+          release_date: releaseDate,
           watched: false,
         };
         const { success, message } = await addMovie(movieData, userID);
         if (success) {
           toast.success(message);
           queryClient.invalidateQueries({ queryKey: ["movies", userID] });
-          setSelectedMovieId("");
-          setIsShowingMovies(!isShowingMovies);
         } else {
           toast.error(message);
         }
@@ -111,45 +152,41 @@ export function SeparateMoviePage({
       return;
     }
 
-    if (savedMovie && savedMovie.watched === true) {
-      toast.error("Movie already added to watched list");
+    if (isWatched) {
+      toast.error("Already in your watched list");
       return;
     }
 
     try {
       setIsLoading2(true);
       if (savedMovie) {
-        const movieData = { ...savedMovie, watched: true };
         const { success, message } = await updateMovie(
           savedMovie.id,
-          movieData,
+          { ...savedMovie, watched: true },
           userID,
         );
         if (success) {
           toast.success(message);
           queryClient.invalidateQueries({ queryKey: ["movies", userID] });
-          setSelectedMovieId("");
-          setIsShowingMovies(!isShowingMovies);
         } else {
           toast.error(message);
         }
       } else {
         const movieData = {
-          tmdbId: movie.id,
-          title: movie.title,
-          poster_path: movie.poster_path,
-          backdrop_path: movie.backdrop_path,
-          overview: movie.overview,
-          vote_average: movie.vote_average,
-          release_date: movie.release_date,
+          tmdbId: content.id,
+          media_type: mediaType,
+          title,
+          poster_path: content.poster_path,
+          backdrop_path: content.backdrop_path,
+          overview: content.overview,
+          vote_average: content.vote_average,
+          release_date: releaseDate,
           watched: true,
         };
         const { success, message } = await addMovie(movieData, userID);
         if (success) {
           toast.success(message);
           queryClient.invalidateQueries({ queryKey: ["movies", userID] });
-          setSelectedMovieId("");
-          setIsShowingMovies(!isShowingMovies);
         } else {
           toast.error(message);
         }
@@ -164,15 +201,12 @@ export function SeparateMoviePage({
 
   async function handleDelete() {
     if (!userID) {
-      toast.error("Please login to delete movie");
+      toast.error("Please login to delete");
       router.push("/login");
       return;
     }
 
-    if (!savedMovie) {
-      toast.error("No movie selected");
-      return;
-    }
+    if (!savedMovie) return;
 
     try {
       const { success, message } = await deleteMovie(savedMovie.id, userID);
@@ -180,8 +214,6 @@ export function SeparateMoviePage({
         toast.success(message);
         removeSavedMovie(savedMovie.id);
         queryClient.invalidateQueries({ queryKey: ["movies", userID] });
-        setSelectedMovieId("");
-        setIsShowingMovies(!isShowingMovies);
       } else {
         toast.error(message);
       }
@@ -190,104 +222,269 @@ export function SeparateMoviePage({
     }
   }
 
-  if (loading) {
-    return (
-      <div className="h-full w-full grid place-items-center">
-        <Loader />
-      </div>
-    )
+  if (loading && !cachedMovie) {
+    return <DetailSkeleton />;
   }
 
   return (
-    <div className="relative my-4 p-2 md:p-3 w-[95%] md:w-[60%] lg:w-[50%] xl:w-[40%] 2xl:w-[30%] mx-auto rounded-lg bg-white text-gray-500 flex flex-col items-center justify-between shadow-md">
-     
-      <button
-        className="absolute top-[5px] left-[5px] md:top-[10px] md:left-[10px] h-[40px] w-[40px] rounded-full bg-gray-100 active:scale-95 transition duration-300 grid place-items-center cursor-pointer z-10"
-        onClick={() => {
-          setSelectedMovieId("");
-          setIsShowingMovies(!isShowingMovies);
-        }}
-      >
-        <span className="material-symbols-outlined text-gray-700">
-          arrow_back
-        </span>
-      </button>
-     
-      {savedMovie && (
-        <button
-          className="absolute top-[5px] right-[5px] md:top-[10px] md:right-[10px] h-[40px] w-[40px] rounded-full bg-gray-100 active:scale-95 transition duration-300 grid place-items-center cursor-pointer z-10"
-          onClick={handleDelete}
-        >
-          <span className="material-symbols-outlined text-red-500">
-            delete
-          </span>
-        </button>
-      )}
+    <div className="w-full min-h-[calc(100vh-102px)] bg-gray-50">
+      {/* Backdrop Hero */}
+      <div className="relative w-full h-[35vh] md:h-[45vh] lg:h-[50vh] overflow-hidden">
+        {backdropURL ? (
+          <Image
+            fill
+            src={backdropURL}
+            alt={title}
+            className="object-cover object-top"
+            sizes="100vw"
+            priority
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900" />
+        )}
+        {/* Gradient overlays */}
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-50 via-gray-50/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent" />
 
-        <div className="animate-fadeIn pt-10 flex flex-col items-center justify-between">
-          {posterURL && (
-            <Image
-              height={200}
-              width={250}
-              src={posterURL}
-              alt={movie.title}
-              className="rounded-md object-cover aspect-auto"
-            />
+        {/* Top bar */}
+        <div className="absolute top-0 left-0 right-0 z-20 p-3 md:p-5 flex items-center justify-between">
+          <button
+            className="h-10 w-10 rounded-full bg-black/40 backdrop-blur-sm hover:bg-black/60 active:scale-95 transition-all duration-200 grid place-items-center cursor-pointer"
+            onClick={() => router.back()}
+          >
+            <span className="material-symbols-outlined text-white text-xl">
+              arrow_back
+            </span>
+          </button>
+
+          {savedMovie && (
+            <button
+              className="h-10 w-10 rounded-full bg-black/40 backdrop-blur-sm hover:bg-red-500/80 active:scale-95 transition-all duration-200 grid place-items-center cursor-pointer group"
+              onClick={handleDelete}
+            >
+              <span className="material-symbols-outlined text-white text-xl group-hover:text-white">
+                delete
+              </span>
+            </button>
           )}
+        </div>
+      </div>
 
-          <div className="flex-1 text-gray-500 py-2 lg:py-4 mx-auto flex flex-col gap-2 items-center justify-center text-base animate-fadeIn">
-            <h1 className="text-2xl lg:text-3xl text-gray-700 font-nunito font-bold">
-              {movie.title}
-            </h1>
-            <div className="w-full flex gap-6">
-              <div className="flex-1 text-right">
-                <span>⭐{movie.vote_average?.toFixed(1) || "N/A"}</span>
-                <br />
-                <span>Year: {year}</span>
-                <br />
-                <span>Runtime: {movie.runtime || "N/A"} min</span>
-                <br />
-                <span>Director: {director}</span>
-                <br />
+      {/* Content */}
+      <div className="w-full max-w-6xl mx-auto px-4 md:px-8 -mt-28 md:-mt-32 relative z-10 pb-12">
+        <div className="flex flex-col md:flex-row gap-6 md:gap-8 lg:gap-10">
+          {/* Poster */}
+          <div className="w-44 md:w-56 lg:w-64 flex-shrink-0 mx-auto md:mx-0">
+            <div className="relative aspect-[2/3] rounded-xl overflow-hidden shadow-2xl ring-1 ring-black/10">
+              {posterURL ? (
+                <Image
+                  fill
+                  src={posterURL}
+                  alt={title}
+                  className="object-cover"
+                  sizes="(max-width: 768px) 176px, (max-width: 1024px) 224px, 256px"
+                  priority
+                />
+              ) : (
+                <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">
+                  <span className="material-symbols-outlined text-5xl">image</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Info */}
+          <div className="flex-1 pt-2 md:pt-12">
+            {/* Title + badge */}
+            <div className="flex items-start gap-3 flex-wrap">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl text-gray-900 font-nunito font-extrabold leading-tight">
+                {title}
+              </h1>
+              {mediaType === "tv" && (
+                <span className="bg-blue-500 text-white text-xs font-bold px-2.5 py-1 rounded-full mt-1.5 uppercase tracking-wide">
+                  TV Series
+                </span>
+              )}
+            </div>
+
+            {/* Tagline */}
+            {tagline && (
+              <p className="text-gray-600 italic text-sm md:text-base mt-1.5">
+                &ldquo;{tagline}&rdquo;
+              </p>
+            )}
+
+            {/* Meta row */}
+            <div className="flex items-center flex-wrap gap-2 md:gap-3 mt-4">
+              {/* Rating */}
+              {content.vote_average > 0 && (
+                <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-full">
+                  <span className="text-amber-500 text-sm">★</span>
+                  <span className="text-amber-700 font-bold text-sm">{rating}</span>
+                  <span className="text-amber-500/60 text-xs">/10</span>
+                </div>
+              )}
+
+              {/* Year */}
+              <div className="flex items-center gap-1.5 bg-gray-100 px-3 py-1.5 rounded-full">
+                <span className="material-symbols-outlined text-gray-500 text-base">
+                  calendar_today
+                </span>
+                <span className="text-gray-600 font-medium text-sm">{year}</span>
               </div>
-              <div className="flex-1 text-left">
-                <span>Released: {movie.release_date || "N/A"}</span>
-                <br />
-                <span>Genre: {genres}</span>
-                <br />
-                <span>Language: {movie.original_language || "N/A"}</span>
-                <br />
+
+              {/* Runtime / Seasons */}
+              {mediaType === "movie" ? (
+                content.runtime > 0 && (
+                  <div className="flex items-center gap-1.5 bg-gray-100 px-3 py-1.5 rounded-full">
+                    <span className="material-symbols-outlined text-gray-500 text-base">
+                      schedule
+                    </span>
+                    <span className="text-gray-600 font-medium text-sm">
+                      {Math.floor(content.runtime / 60)}h {content.runtime % 60}m
+                    </span>
+                  </div>
+                )
+              ) : (
+                <>
+                  {content.number_of_seasons > 0 && (
+                    <div className="flex items-center gap-1.5 bg-gray-100 px-3 py-1.5 rounded-full">
+                      <span className="material-symbols-outlined text-gray-500 text-base">
+                        tv
+                      </span>
+                      <span className="text-gray-600 font-medium text-sm">
+                        {content.number_of_seasons} Season{content.number_of_seasons !== 1 ? "s" : ""}
+                      </span>
+                    </div>
+                  )}
+                  {content.number_of_episodes > 0 && (
+                    <div className="flex items-center gap-1.5 bg-gray-100 px-3 py-1.5 rounded-full">
+                      <span className="material-symbols-outlined text-gray-500 text-base">
+                        playlist_play
+                      </span>
+                      <span className="text-gray-600 font-medium text-sm">
+                        {content.number_of_episodes} Episodes
+                      </span>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Language */}
+              {content.original_language && (
+                <div className="flex items-center gap-1.5 bg-gray-100 px-3 py-1.5 rounded-full">
+                  <span className="material-symbols-outlined text-gray-500 text-base">
+                    translate
+                  </span>
+                  <span className="text-gray-600 font-medium text-sm uppercase">
+                    {content.original_language}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Genres */}
+            {genres.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-4">
+                {genres.map((g) => (
+                  <span
+                    key={g.id}
+                    className="bg-gray-900 text-white text-xs font-semibold px-3 py-1.5 rounded-full"
+                  >
+                    {g.name}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Director / Creator + Network */}
+            <div className="flex flex-wrap gap-x-6 gap-y-1 mt-4 text-sm">
+              {creator && (
+                <div>
+                  <span className="text-gray-400">{mediaType === "tv" ? "Created by" : "Director"}:</span>{" "}
+                  <span className="text-gray-700 font-medium">{creator}</span>
+                </div>
+              )}
+              {mediaType === "tv" && content.networks?.length > 0 && (
+                <div>
+                  <span className="text-gray-400">Network:</span>{" "}
+                  <span className="text-gray-700 font-medium">
+                    {content.networks.map((n) => n.name).join(", ")}
+                  </span>
+                </div>
+              )}
+              {mediaType === "tv" && content.status && (
+                <div>
+                  <span className="text-gray-400">Status:</span>{" "}
+                  <span className={`font-medium ${content.status === "Returning Series"
+                    ? "text-green-600"
+                    : content.status === "Ended"
+                      ? "text-gray-500"
+                      : "text-gray-700"
+                    }`}>
+                    {content.status}
+                  </span>
+                </div>
+              )}
+              <div>
+                <span className="text-gray-400">Released:</span>{" "}
+                <span className="text-gray-700 font-medium">{releaseDate}</span>
               </div>
             </div>
 
-            <p className="text-justify lg:px-4 xl:px-6 animate-fadeIn animation-delay-200">
-              {movie.overview}
-            </p>
-          </div>
+            {/* Overview */}
+            {content.overview && (
+              <div className="mt-6">
+                <h3 className="text-gray-900 font-bold text-base mb-2">Overview</h3>
+                <p className="text-gray-600 leading-relaxed text-sm md:text-base">
+                  {content.overview}
+                </p>
+              </div>
+            )}
 
-          <div className="flex gap-4 md:gap-8 animate-fadeIn animation-delay-400">
-            <Button varient="outline" size="lg"
-              className={`font-semibold px-6 py-2.5 border border-gray-300 rounded-full
-                ${movie?.watched === false
-                  ? "bg-black text-white cursor-not-allowed "
-                  : ""
-                }`}
-              onClick={handleAddToWatchlist}
-            >
-              {isLoading ? "Adding..." : "Want to Watch ?"}
-            </Button>
-            <Button varient="outline" size="lg"
-              className={`font-semibold px-6 py-2.5 border border-gray-300 rounded-full
-                ${movie?.watched === true
-                  ? "bg-black text-white cursor-not-allowed "
-                  : ""
-                }`}
-              onClick={handleAddToWatched}
-            >
-              {isLoading2 ? "Adding..." : "Watched ?"}
-            </Button>
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-3 mt-8">
+              <button
+                disabled={isWatchlisted}
+                onClick={handleAddToWatchlist}
+                className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm transition-all duration-200 cursor-pointer
+                  ${isWatchlisted
+                    ? "bg-gray-900 text-white cursor-not-allowed"
+                    : "bg-gray-900 text-white hover:bg-gray-800 active:scale-95 shadow-lg shadow-gray-900/20"
+                  }`}
+              >
+                {isLoading ? (
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <span className="material-symbols-outlined text-lg">
+                    {isWatchlisted ? "bookmark_added" : "bookmark_add"}
+                  </span>
+                )}
+                {isWatchlisted ? "In Watchlist" : "Want to Watch"}
+              </button>
+
+              <button
+                disabled={isWatched}
+                onClick={handleAddToWatched}
+                className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm transition-all duration-200 cursor-pointer
+                  ${isWatched
+                    ? "bg-green-600 text-white cursor-not-allowed"
+                    : "bg-white text-gray-700 border border-gray-300 hover:border-gray-400 hover:bg-gray-50 active:scale-95"
+                  }`}
+              >
+                {isLoading2 ? (
+                  <span className="w-4 h-4 border-2 border-gray-400/30 border-t-gray-600 rounded-full animate-spin" />
+                ) : (
+                  <span className="material-symbols-outlined text-lg">
+                    {isWatched ? "check_circle" : "visibility"}
+                  </span>
+                )}
+                {isWatched ? "Already Watched" : "Mark as Watched"}
+              </button>
+            </div>
           </div>
         </div>
+      </div>
     </div>
   );
 }

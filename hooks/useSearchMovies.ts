@@ -1,8 +1,7 @@
 "use client";
 import { useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { searchMovies } from "@/api/tmdb";
-import { normalizeMovieForCard } from "@/api/tmdb";
+import { searchMulti, normalizeMovieForCard } from "@/api/tmdb";
 import { useMovieStore } from "@/store/store";
 
 export function useSearchMovies() {
@@ -19,8 +18,10 @@ export function useSearchMovies() {
     queryKey: ["search", searchQuery, searchPage],
     queryFn: async ({ signal }) => {
       if (!searchQuery.trim()) return [];
-      const data = await searchMovies(searchQuery, searchPage, signal);
-      return data.results.map(normalizeMovieForCard);
+      const data = await searchMulti(searchQuery, searchPage, signal);
+      return data.results
+        .filter((item) => item.media_type === "movie" || item.media_type === "tv")
+        .map(normalizeMovieForCard);
     },
     enabled: !!searchQuery.trim(),
     placeholderData: (prev) => prev,

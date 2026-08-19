@@ -1,10 +1,14 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 
 interface MovieStore {
   savedMovies: any[];
   setSavedMovies: (savedMovies: any[]) => void;
   removeSavedMovie: (id: string) => void;
+
+  movieDetailsCache: Record<number, any>;
+  setMovieDetails: (id: number, data: any) => void;
 
   searchQuery: string;
   setSearchQuery: (searchQuery: string) => void;
@@ -25,34 +29,31 @@ interface MovieStore {
   setFilters: (filters: Partial<MovieStore["filters"]>) => void;
   resetFilters: () => void;
 }
-export const useMovieStore = create<MovieStore>((set) => ({
-  savedMovies: [],
-  setSavedMovies: (savedMovies) => set({ savedMovies }),
-  removeSavedMovie: (id) =>
-    set((state) => ({
-      savedMovies: state.savedMovies.filter((m) => m.id !== id),
-    })),
+export const useMovieStore = create<MovieStore>()(
+  persist(
+    (set) => ({
+      savedMovies: [],
+      setSavedMovies: (savedMovies) => set({ savedMovies }),
+      removeSavedMovie: (id) =>
+        set((state) => ({
+          savedMovies: state.savedMovies.filter((m) => m.id !== id),
+        })),
 
-  searchQuery: "",
-  setSearchQuery: (searchQuery) => set({ searchQuery }),
+      movieDetailsCache: {},
+      setMovieDetails: (id, data) =>
+        set((state) => ({
+          movieDetailsCache: { ...state.movieDetailsCache, [id]: data },
+        })),
 
-  searchPage: 1,
-  setSearchPage: (searchPage) => set({ searchPage }),
+      searchQuery: "",
+      setSearchQuery: (searchQuery) => set({ searchQuery }),
 
-  genres: [],
-  setGenres: (genres) => set({ genres }),
+      searchPage: 1,
+      setSearchPage: (searchPage) => set({ searchPage }),
 
-  filters: {
-    genreIds: [],
-    sortBy: "popularity.desc",
-    year: null,
-    minRating: null,
-    maxRating: null,
-  },
-  setFilters: (filters) =>
-    set((state) => ({ filters: { ...state.filters, ...filters } })),
-  resetFilters: () =>
-    set({
+      genres: [],
+      setGenres: (genres) => set({ genres }),
+
       filters: {
         genreIds: [],
         sortBy: "popularity.desc",
@@ -60,8 +61,27 @@ export const useMovieStore = create<MovieStore>((set) => ({
         minRating: null,
         maxRating: null,
       },
+      setFilters: (filters) =>
+        set((state) => ({ filters: { ...state.filters, ...filters } })),
+      resetFilters: () =>
+        set({
+          filters: {
+            genreIds: [],
+            sortBy: "popularity.desc",
+            year: null,
+            minRating: null,
+            maxRating: null,
+          },
+        }),
     }),
-}));
+    {
+      name: "movie-mania-store",
+      partialize: (state) => ({
+        movieDetailsCache: state.movieDetailsCache,
+      }),
+    },
+  ),
+);
 
 
 interface AuthState {

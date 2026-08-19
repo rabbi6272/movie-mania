@@ -1,11 +1,9 @@
 "use client";
-import { SmallMovieCard } from "./smallMovieCard";
+import { SmallMovieCard } from "./SmallMovieCard";
 
 export default function SimilarMovies({
   movies,
   title,
-  setSelectedMovieId,
-  setIsShowingMovies,
 }) {
   if (!movies || movies.length === 0) return null;
 
@@ -18,8 +16,6 @@ export default function SimilarMovies({
             <SmallMovieCard
               movie={movie}
               index={index}
-              setSelectedMovieId={setSelectedMovieId}
-              setIsShowingMovies={setIsShowingMovies}
             />
           </div>
         ))}

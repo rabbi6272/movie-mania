@@ -1,27 +1,11 @@
 "use client";
-import { useState } from "react";
-import { SmallMovieCard } from "@/components/smallMovieCard";
+import { SmallMovieCard } from "@/components/SmallMovieCard";
 import { Loader } from "@/components/loader";
-import { SeparateMoviePage } from "@/components/SeparateMoviePage";
 import { useSearchMovies } from "@/hooks/useSearchMovies";
 
 export default function SearchPage() {
-  const [isShowingMovies, setIsShowingMovies] = useState(false);
-  const [selectedMovieId, setSelectedMovieId] = useState("");
-
   const { searchQuery, setSearchQuery, searchedMovies, searchLoading, searchError } =
     useSearchMovies();
-
-  if (isShowingMovies) {
-    return (
-      <SeparateMoviePage
-        isShowingMovies={isShowingMovies}
-        setIsShowingMovies={setIsShowingMovies}
-        selectedMovieId={selectedMovieId}
-        setSelectedMovieId={setSelectedMovieId}
-      />
-    );
-  }
 
   return (
     <div className="w-full">
@@ -71,8 +55,6 @@ export default function SearchPage() {
               key={movie.tmdbId || movie.id || index}
               movie={movie}
               index={index}
-              setSelectedMovieId={setSelectedMovieId}
-              setIsShowingMovies={setIsShowingMovies}
             />
           ))}
         </div>

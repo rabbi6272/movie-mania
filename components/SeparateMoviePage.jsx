@@ -10,7 +10,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { addMovie, updateMovie, deleteMovie } from "@/hooks/useMoviesServices";
 import { useMovieStore } from "@/store/store";
 import { useAuth } from "@/hooks/useAuth";
-import { getMovieDetails, getTVDetails, getPosterURL, getBackdropURL } from "@/api/tmdb";
+import { getMovieDetails, getTVDetails, getPosterURL, getBackdropURL, normalizeMovieForCard } from "@/api/tmdb";
+import TrailerModal from "./TrailerModal";
+import SimilarMovies from "./SimilarMovies";
 
 function DetailSkeleton() {
   return (
@@ -44,6 +46,7 @@ function DetailSkeleton() {
 export function SeparateMoviePage({ contentId, mediaType = "movie" }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoading2, setIsLoading2] = useState(false);
+  const [showTrailer, setShowTrailer] = useState(false);
 
   const { userID } = useAuth();
   const savedMovies = useMovieStore((state) => state.savedMovies);
@@ -84,6 +87,13 @@ export function SeparateMoviePage({ contentId, mediaType = "movie" }) {
   const releaseDate = content.release_date || content.first_air_date || "N/A";
   const rating = content.vote_average?.toFixed(1) || "N/A";
   const tagline = content.tagline;
+
+  const videoTrailerKey = content.videos?.results?.find(
+    (v) => v.type === "Trailer" && v.site === "YouTube"
+  )?.key || content.videos?.results?.[0]?.key || null;
+
+  const similarMovies = content.similar?.results?.slice(0, 15).map(normalizeMovieForCard) || [];
+  const recommendedMovies = content.recommendations?.results?.slice(0, 15).map(normalizeMovieForCard) || [];
 
   const creator = mediaType === "tv"
     ? content.created_by?.map((c) => c.name).join(", ")
@@ -274,8 +284,8 @@ export function SeparateMoviePage({ contentId, mediaType = "movie" }) {
       <div className="w-full max-w-6xl mx-auto px-4 md:px-8 -mt-28 md:-mt-32 relative z-10 pb-12">
         <div className="flex flex-col md:flex-row gap-6 md:gap-8 lg:gap-10">
           {/* Poster */}
-          <div className="w-44 md:w-56 lg:w-64 flex-shrink-0 mx-auto md:mx-0">
-            <div className="relative aspect-[2/3] rounded-xl overflow-hidden shadow-2xl ring-1 ring-black/10">
+          <div className="w-54 md:w-60 lg:w-68 flex-shrink-0 mx-auto md:mx-0">
+            <div className="relative aspect-[2/3] rounded-xl overflow-hidden shadow-xl ring-1 ring-black/10">
               {posterURL ? (
                 <Image
                   fill
@@ -296,12 +306,12 @@ export function SeparateMoviePage({ contentId, mediaType = "movie" }) {
           {/* Info */}
           <div className="flex-1 pt-2 md:pt-12">
             {/* Title + badge */}
-            <div className="flex items-start gap-3 flex-wrap">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl text-gray-900 font-nunito font-extrabold leading-tight">
+            <div className="relative">
+              <h1 className="text-center text-3xl md:text-4xl lg:text-5xl text-gray-900 font-nunito font-extrabold leading-tight">
                 {title}
               </h1>
               {mediaType === "tv" && (
-                <span className="bg-blue-500 text-white text-xs font-bold px-2.5 py-1 rounded-full mt-1.5 uppercase tracking-wide">
+                <span className="absolute -top-6 right-6 bg-blue-500 text-white text-xs font-bold px-2.5 py-1 rounded-full mt-1.5 uppercase tracking-wide">
                   TV Series
                 </span>
               )}
@@ -319,9 +329,8 @@ export function SeparateMoviePage({ contentId, mediaType = "movie" }) {
               {/* Rating */}
               {content.vote_average > 0 && (
                 <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-full">
-                  <span className="text-amber-500 text-sm">★</span>
+                  <span className="text-amber-500 text-md">★</span>
                   <span className="text-amber-700 font-bold text-sm">{rating}</span>
-                  <span className="text-amber-500/60 text-xs">/10</span>
                 </div>
               )}
 
@@ -443,48 +452,70 @@ export function SeparateMoviePage({ contentId, mediaType = "movie" }) {
             )}
 
             {/* Action Buttons */}
-            <div className="flex flex-wrap gap-3 mt-8">
-              <button
-                disabled={isWatchlisted}
-                onClick={handleAddToWatchlist}
-                className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm transition-all duration-200 cursor-pointer
-                  ${isWatchlisted
-                    ? "bg-gray-900 text-white cursor-not-allowed"
-                    : "bg-gray-900 text-white hover:bg-gray-800 active:scale-95 shadow-lg shadow-gray-900/20"
-                  }`}
-              >
-                {isLoading ? (
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
+            <div className="flex flex-col gap-3 mt-8">
+              {videoTrailerKey && (
+                <button
+                  onClick={() => setShowTrailer(true)}
+                  className="flex items-center justify-center gap-1 lg:gap-2 px-4 lg:px-6 py-3 rounded-full font-semibold text-sm transition-all duration-200 cursor-pointer shadow-md shadow-gray-900/20 bg-blue-600 text-white hover:bg-blue-700 active:scale-95"
+                >
                   <span className="material-symbols-outlined text-lg">
-                    {isWatchlisted ? "bookmark_added" : "bookmark_add"}
+                    play_arrow
                   </span>
-                )}
-                {isWatchlisted ? "In Watchlist" : "Want to Watch"}
-              </button>
+                  Play Trailer
+                </button>
+              )}
 
-              <button
-                disabled={isWatched}
-                onClick={handleAddToWatched}
-                className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm transition-all duration-200 cursor-pointer
+              <div className="flex gap-3">
+                <button
+                  disabled={isWatchlisted}
+                  onClick={handleAddToWatchlist}
+                  className={`flex items-center gap-1 lg:gap-2 px-4 lg:px-6 py-3 rounded-full font-semibold text-sm transition-all duration-200 cursor-pointer shadow-md shadow-gray-900/20
+                  ${isWatchlisted
+                      ? "bg-black text-white cursor-not-allowed"
+                      : "bg-transparent border border-gray-600 text-black hover:bg-gray-800 active:scale-95 "
+                    }`}
+                >
+                  {isLoading ? (
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <span className="material-symbols-outlined text-lg">
+                      {isWatchlisted ? "bookmark_added" : "bookmark_add"}
+                    </span>
+                  )}
+                  {isWatchlisted ? "In Watchlist" : "Want to Watch"}
+                </button>
+
+                <button
+                  disabled={isWatched}
+                  onClick={handleAddToWatched}
+                  className={`flex items-center gap-1 lg:gap-2 px-4 lg:px-6 py-3 rounded-full font-semibold text-sm transition-all duration-200 cursor-pointer shadow-md shadow-gray-900/20
                   ${isWatched
-                    ? "bg-green-600 text-white cursor-not-allowed"
-                    : "bg-white text-gray-700 border border-gray-300 hover:border-gray-400 hover:bg-gray-50 active:scale-95"
-                  }`}
-              >
-                {isLoading2 ? (
-                  <span className="w-4 h-4 border-2 border-gray-400/30 border-t-gray-600 rounded-full animate-spin" />
-                ) : (
-                  <span className="material-symbols-outlined text-lg">
-                    {isWatched ? "check_circle" : "visibility"}
-                  </span>
-                )}
-                {isWatched ? "Already Watched" : "Mark as Watched"}
-              </button>
+                      ? "bg-black text-white cursor-not-allowed"
+                      : "bg-transparent border border-gray-600 text-black hover:bg-gray-800 active:scale-95 "
+                    }`}
+                >
+                  {isLoading2 ? (
+                    <span className="w-4 h-4 border-2 border-gray-400/30 border-t-gray-600 rounded-full animate-spin" />
+                  ) : (
+                    <span className="material-symbols-outlined text-lg">
+                      {isWatched ? "check_circle" : "visibility"}
+                    </span>
+                  )}
+                  {isWatched ? "Already Watched" : "Mark as Watched"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
+
+        {/* Similar & Recommended */}
+        <SimilarMovies movies={similarMovies} title="Similar Movies" />
+        <SimilarMovies movies={recommendedMovies} title="Recommended" />
       </div>
+
+      {showTrailer && videoTrailerKey && (
+        <TrailerModal videoKey={videoTrailerKey} onClose={() => setShowTrailer(false)} />
+      )}
     </div>
   );
 }

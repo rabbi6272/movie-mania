@@ -17,7 +17,7 @@ export const SmallMovieCard = memo(function SmallMovieCard({
     <Link
       href={detailPath}
       className="h-auto w-full mx-auto rounded-md lg:rounded-lg border border-gray-200 flex flex-col cursor-pointer bg-white transition-colors duration-300 shadow-md hover:shadow-lg overflow-hidden group animate-fadeIn"
-      style={{ animationDelay: `${index * 20}ms` }}
+      style={{ animationDelay: `${index * 15}ms` }}
     >
       <div className="relative w-full aspect-[3/4] overflow-hidden">
         {posterURL ? (

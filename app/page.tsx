@@ -79,23 +79,23 @@ export default function HomePage() {
   return (
     <>
       <div className="w-full py-5 px-4 md:pl-6 flex items-center overflow-x-auto gap-2 md:gap-4 scrollbar-hide">
-        <button className={`${categoryFilter === "all" ? "bg-black text-white" : "bgtransparent text-gray-900"} text-sm md:text-base rounded-full px-4 xl:px-6 py-2 border border-gray-300 shadow-md font-semibold transition-all duration-300 cursor-pointer`}
+        <button className={`${categoryFilter === "all" ? "bg-black text-white" : "bgtransparent text-gray-900"} text-sm md:text-base text-nowrap rounded-full px-4 xl:px-6 py-2 border border-gray-300 shadow-md font-semibold transition-all duration-300 cursor-pointer`}
           onClick={() => setategoryFilter("all")}>
           All
         </button>
-        <button className={`${categoryFilter === "wantToWatch" ? "bg-black text-white" : "bgtransparent text-gray-900"} text-sm md:text-base rounded-full px-4 xl:px-6 py-2 border border-gray-300 shadow-md font-semibold transition-all duration-300 cursor-pointer`}
+        <button className={`${categoryFilter === "wantToWatch" ? "bg-black text-white" : "bgtransparent text-gray-900"} text-sm md:text-base text-nowrap rounded-full px-4 xl:px-6 py-2 border border-gray-300 shadow-md font-semibold transition-all duration-300 cursor-pointer`}
           onClick={() => setategoryFilter("wantToWatch")}>
           Want to Watch
         </button >
-        <button className={`${categoryFilter === "watched" ? "bg-black text-white" : "bgtransparent text-gray-900"} text-sm md:text-base rounded-full px-4 xl:px-6 py-2 border border-gray-300 shadow-md font-semibold transition-all duration-300 cursor-pointer`}
+        <button className={`${categoryFilter === "watched" ? "bg-black text-white" : "bgtransparent text-gray-900"} text-sm md:text-base text-nowrap rounded-full px-4 xl:px-6 py-2 border border-gray-300 shadow-md font-semibold transition-all duration-300 cursor-pointer`}
           onClick={() => setategoryFilter("watched")}>
           Watched
         </button >
-        <button className={`${mediaTypeFilter.includes("movie") ? "bg-black text-white" : "bgtransparent text-gray-900"} text-sm md:text-base rounded-full px-4 xl:px-6 py-2 border border-gray-300 shadow-md font-semibold transition-all duration-300 cursor-pointer`}
+        <button className={`${mediaTypeFilter.includes("movie") ? "bg-black text-white" : "bgtransparent text-gray-900"} text-sm md:text-base text-nowrap rounded-full px-4 xl:px-6 py-2 border border-gray-300 shadow-md font-semibold transition-all duration-300 cursor-pointer`}
           onClick={() => toggleMediaType("movie")}>
           Movie
         </button >
-        <button className={`${mediaTypeFilter.includes("tv") ? "bg-black text-white" : "bgtransparent text-gray-900"} text-sm md:text-base rounded-full px-4 xl:px-6 py-2 border border-gray-300 shadow-md font-semibold transition-all duration-300 cursor-pointer`}
+        <button className={`${mediaTypeFilter.includes("tv") ? "bg-black text-white" : "bgtransparent text-gray-900"} text-sm md:text-base text-nowrap rounded-full px-4 xl:px-6 py-2 border border-gray-300 shadow-md font-semibold transition-all duration-300 cursor-pointer`}
           onClick={() => toggleMediaType("tv")}>
           Tv Series
         </button >

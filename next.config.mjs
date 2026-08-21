@@ -7,5 +7,6 @@ const nextConfig = {
       { protocol: "https", hostname: "img.youtube.com", pathname: "/**" },
     ],
   },
+  allowedDevOrigins: ["http://localhost:3000", "192.168.0.*"]
 };
 export default nextConfig;

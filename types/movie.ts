@@ -9,6 +9,7 @@ export type Movie = {
     posterUrl: string;
     tmdbId?: string;
     media_type?: "movie" | "tv";
+    first_air_date?: string;
     poster_path?: string;
     backdrop_path?: string;
     overview?: string;

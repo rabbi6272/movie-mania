@@ -2,12 +2,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { memo } from "react";
+
 import { getPosterURL } from "@/api/tmdb";
+import type { Movie } from "@/types/movie";
 
 export const SmallMovieCard = memo(function SmallMovieCard({
   movie,
   index,
-}) {
+}: { movie: Movie; index: number }) {
   const posterURL = getPosterURL(movie.poster_path, "w342");
   const year = (movie.release_date || movie.first_air_date)?.substring(0, 4) || "N/A";
   const mediaType = movie.media_type || "movie";

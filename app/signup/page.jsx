@@ -5,10 +5,7 @@ import Link from "next/link";
 
 import toast from "react-hot-toast";
 
-import { Input } from "@/components/ui/input";
-
 import { useAuth } from "@/hooks/useAuth";
-import { Button } from "@heroui/react";
 
 export default function SignupForm() {
   const [formData, setFormData] = useState({ fullName: "", email: "", password: "" });
@@ -70,7 +67,7 @@ export default function SignupForm() {
         <label htmlFor="fullName" className="pl-2 text-sm font-semibold text-gray-600">
           Full Name*
         </label>
-        <Input
+        <input
           required
           placeholder="John Doe"
           type={"text"}
@@ -87,7 +84,7 @@ export default function SignupForm() {
         <label htmlFor="email" className="pl-2 text-sm font-semibold text-gray-600">
           Email*
         </label>
-        <Input
+        <input
           required
           placeholder="someone@gmail.com"
           type={"text"}
@@ -99,7 +96,7 @@ export default function SignupForm() {
         <label htmlFor="password" className="pl-2 text-sm font-semibold text-gray-600">
           Password*{" "}
         </label>
-        <Input
+        <input
           required
           placeholder="******"
           type={"password"}
@@ -119,9 +116,9 @@ export default function SignupForm() {
           </span>
           <span className="text-blue-400">Forgot Password?</span>
         </p>
-        <Button type="submit" size="lg" className={"bg-black text-white w-full rounded-full px-6 font-semibold text-md"}>
+        <button type="submit" size="lg" className={"bg-black text-white w-full rounded-full px-6 font-semibold text-md"}>
           Sign Up{" "}
-        </Button>
+        </button>
       </form>
     </div>
   );

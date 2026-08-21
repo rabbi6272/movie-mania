@@ -8,7 +8,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/utils/firebaseConfig";
 
-import { Movie } from "@/app/types/movie";
+import { Movie } from "@/types/movie";
 
 import { QueryClient } from "@tanstack/react-query";
 const queryClient = new QueryClient();

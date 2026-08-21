@@ -59,64 +59,69 @@ export default function SignupForm() {
     <div className="flex items-center justify-center h-[calc(100vh-70px-32px)] px-4 md:px-0">
       <form
         onSubmit={handleSubmit}
-        className="space-y-3 max-w-full sm:w-[70%] md:w-[50%] lg:w-[30%] xl:w-[25%] p-5 bg-white shadow-md rounded-lg"
+        className="space-y-3 max-w-full sm:w-[70%] md:w-[50%] lg:w-[30%] xl:w-[25%] p-5 bg-white shadow-md rounded-xl"
       >
-        <h1 className="text-3xl text-gray-700 font-semibold text-center">
+        <h1 className="text-3xl text-gray-700 font-semibold text-center mb-2">
           Sign Up
         </h1>
-        <label htmlFor="fullName" className="pl-2 text-sm font-semibold text-gray-600">
-          Full Name*
-        </label>
-        <input
-          required
-          placeholder="John Doe"
-          type={"text"}
-          id="fullName"
-          className={
-            "text-gray-700 text-sm placeholder:text-gray-400 placeholder:text-xs rounded-full"
-          }
-          value={formData.fullName}
-          onChange={(e) =>
-            setFormData({ ...formData, fullName: e.target.value })
-          }
-        />
+        <div>
+          <label htmlFor="fullName" className="pl-2 text-sm md:text-base font-semibold text-gray-600">
+            Full Name*
+          </label>
+          <input
+            required
+            placeholder="John Doe"
+            type={"text"}
+            id="fullName"
+            className={
+              "w-full py-2 px-4 text-gray-700 text-sm md:text-base md:text-base placeholder:text-gray-400 placeholder:text-sm md:text-base bg-gray-50 border border-gray-300 rounded-full"
+            }
+            value={formData.fullName}
+            onChange={(e) =>
+              setFormData({ ...formData, fullName: e.target.value })
+            }
+          />
+        </div>
 
-        <label htmlFor="email" className="pl-2 text-sm font-semibold text-gray-600">
-          Email*
-        </label>
-        <input
-          required
-          placeholder="someone@gmail.com"
-          type={"text"}
-          id="email"
-          className={"text-gray-700 text-sm placeholder:text-gray-400 placeholder:text-xs rounded-full"}
-          value={formData.email}
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-        />
-        <label htmlFor="password" className="pl-2 text-sm font-semibold text-gray-600">
-          Password*{" "}
-        </label>
-        <input
-          required
-          placeholder="******"
-          type={"password"}
-          id="password"
-          className={"text-gray-700 text-sm placeholder:text-gray-400 placeholder:text-xs rounded-full"}
-          value={formData.password}
-          onChange={(e) =>
-            setFormData({ ...formData, password: e.target.value })
-          }
-        />{" "}
-        <p className="w-full text-xs mb-3 text-gray-500 flex justify-between">
+        <div>
+          <label htmlFor="email" className="pl-2 text-sm md:text-base font-semibold text-gray-600">
+            Email*
+          </label>
+          <input
+            required
+            placeholder="someone@gmail.com"
+            type={"text"}
+            id="email"
+            className={"w-full py-2 px-4 text-gray-700 text-sm md:text-base md:text-base placeholder:text-gray-400 placeholder:text-sm md:text-base bg-gray-50 border border-gray-300 rounded-full"}
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          />
+        </div>
+        <div>
+          <label htmlFor="password" className="pl-2 text-sm md:text-base font-semibold text-gray-600">
+            Password*{" "}
+          </label>
+          <input
+            required
+            placeholder="******"
+            type={"password"}
+            id="password"
+            className={"w-full py-2 px-4 text-gray-700 text-sm md:text-base md:text-base placeholder:text-gray-400 placeholder:text-sm md:text-base bg-gray-50 border border-gray-300 rounded-full"}
+            value={formData.password}
+            onChange={(e) =>
+              setFormData({ ...formData, password: e.target.value })
+            }
+          />
+        </div>
+        <p className="w-full text-sm mb-3 text-gray-500">
           <span>
             Already have an account?{" "}
             <Link href="/login" className="text-blue-400">
               Login
             </Link>
           </span>
-          <span className="text-blue-400">Forgot Password?</span>
         </p>
-        <button type="submit" size="lg" className={"bg-black text-white w-full rounded-full px-6 font-semibold text-md"}>
+        <button type="submit" size="lg" className={"bg-black text-white w-full rounded-full px-6 py-2.5 font-semibold text-lg"}>
           Sign Up{" "}
         </button>
       </form>

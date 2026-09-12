@@ -16,6 +16,8 @@ import { GuestHeroSection } from "@/components/home/GuestHeroSection";
 import { EmptyLibrary } from "@/components/home/EmptyLibrary";
 
 export default function HomePage() {
+  const [categoryFilter, setategoryFilter] = useState<"all" | "wantToWatch" | "watched">("all");
+  const [mediaTypeFilter, setMediaTypeFilter] = useState<("movie" | "tv")[]>([]);
   const router = useRouter();
   const { userID } = useAuth();
 
@@ -27,9 +29,6 @@ export default function HomePage() {
       </>
     )
   }
-
-  const [categoryFilter, setategoryFilter] = useState<"all" | "wantToWatch" | "watched">("all");
-  const [mediaTypeFilter, setMediaTypeFilter] = useState<("movie" | "tv")[]>([]);
 
   const toggleMediaType = (type: "movie" | "tv") => {
     setMediaTypeFilter((prev) =>
@@ -126,7 +125,7 @@ export default function HomePage() {
           </div>
 
           {filteredMovies.length > 0 ? (
-            <div className="w-full grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 md:grid-cols-8 xl:grid-cols-10 gap-0.5 md:gap-2 px-2 md:px-4">
+            <div className="w-full grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-0.5 md:gap-2 px-2 md:px-4">
               {filteredMovies?.map((movie, index) => (
                 <SmallMovieCard
                   key={index || movie.tmdbId || movie.id}
